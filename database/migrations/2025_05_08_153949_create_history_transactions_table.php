@@ -15,10 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->enum('transaction_type', ['in', 'out']);
-            $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
+            $table->uuid('order_id')->nullable();
             $table->decimal('amount', 10, 2);
             $table->decimal('balance_now', 10, 2);
             $table->timestamps();
+
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+
         });
     }
 
