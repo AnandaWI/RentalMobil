@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->decimal('balance', 10, 2)->default(0);
-            $table->foreignId('bank_id')->constrained('m_banks')->onDelete('cascade');
-            $table->string('bank_no');
+            $table->foreignId('bank_id')->constrained('m_banks')->onDelete('cascade')->nullable();
+            $table->string('bank_no')->nullable();
             $table->timestamps();
         });
     }
