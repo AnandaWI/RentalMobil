@@ -6,6 +6,7 @@ use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
 use App\Http\Controllers\Master\MDestinationController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,4 +26,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
+});
+
+
+Route::middleware('guest')->group(function () {
+    Route::post('create-order', [PaymentController::class, 'store']);
 });
