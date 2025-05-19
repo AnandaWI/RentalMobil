@@ -88,6 +88,7 @@ class PaymentController extends BaseController
             $order->snap_token = $snapToken;
             $order->save();
 
+            DB::commit();
             return $this->sendSuccess([
                 'amount' => $order->total_price,
                 'snap_token' => $order->snap_token
