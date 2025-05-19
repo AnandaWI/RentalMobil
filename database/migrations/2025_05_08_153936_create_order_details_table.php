@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('order_id');
             $table->foreignId('car_id')->constrained('owner_cars')->onDelete('cascade');
-            $table->integer('amount');
+            $table->integer('amount')->nullable();
             $table->timestamps();
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
