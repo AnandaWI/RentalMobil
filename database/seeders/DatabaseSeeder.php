@@ -27,7 +27,8 @@ class DatabaseSeeder extends Seeder
             MCarTypeSeeder::class,
             MDestinationSeeder::class,
             OwnerSeeder::class,
-            OwnerCarSeeder::class
+            OwnerCarSeeder::class,
+            CarDestinationPriceSeeder::class
         ]);
     }
 }
