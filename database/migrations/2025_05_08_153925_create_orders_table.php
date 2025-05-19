@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->foreignId('destination_id')->constrained('m_destinations')->onDelete('cascade');
             $table->integer('day');
-            $table->decimal('total_price', 10, 2);
+            $table->decimal('total_price', 10, 2)->nullable();
             $table->date('rent_date');
             $table->string('transaction_id')->nullable();
             $table->enum('status', ['pending', 'failed', 'success', 'done'])->default('pending');
