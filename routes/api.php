@@ -31,4 +31,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
 Route::middleware('guest')->group(function () {
     Route::post('create-order', [PaymentController::class, 'store']);
+    Route::post('test', function (Request $request) {
+        return $request->all();
+    });
 });
