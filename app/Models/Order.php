@@ -13,7 +13,8 @@ class Order extends Model
         'total_price',
         'rent_date',
         'transaction_id',
-        'status'
+        'status',
+        'snap_token'
     ];
 
     // Relationship with Customer
