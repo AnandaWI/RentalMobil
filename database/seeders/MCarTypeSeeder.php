@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\MCarCategory;
 use App\Models\MCarType;
+use App\Models\CarTypeImage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -76,11 +77,18 @@ class MCarTypeSeeder extends Seeder
             // Save the image to storage
             File::put(storage_path('app/public/' . $filePath), $response->body());
 
-            // Update the img_url to the local path
-            $carType['img_url'] = $filePath;
+            // Remove img_url from car type data
+            $imgUrl = $carType['img_url'];
+            unset($carType['img_url']);
 
             // Create car type record
-            MCarType::create($carType);
+            $newCarType = MCarType::create($carType);
+
+            // Create car type image record
+            CarTypeImage::create([
+                'car_type_id' => $newCarType->id,
+                'img_url' => $filePath
+            ]);
         }
     }
 }

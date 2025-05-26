@@ -13,6 +13,7 @@ class MCarType extends Model
         'car_name',
         'capacity',
         'rent_price',
+        'img_url'
     ];
 
     // Relationship with MCarCategory
@@ -25,10 +26,5 @@ class MCarType extends Model
     public function ownerCars()
     {
         return $this->hasMany(OwnerCar::class, 'car_type_id');
-    }
-
-    public function images()
-    {
-        return $this->hasMany(CarTypeImage::class, 'car_type_id');
     }
 }
