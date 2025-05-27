@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PaymentRequest;
 use App\Models\CarDestinationPrice;
 use App\Models\Customer;
+use App\Models\HistoryTransaction;
 use App\Models\MCarType;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Owner;
 use App\Models\OwnerCar;
 use App\Models\OwnerCarAvailability;
 use DateInterval;
@@ -97,5 +99,42 @@ class PaymentController extends BaseController
             DB::rollBack();
             return $this->sendError($e->getMessage());
         }
+    }
+
+    public function callback(Request $request)
+    {
+        $serverKey = config('app.MIDTRANS_SERVER_KEY');
+        $hashedKey = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+        if ($hashedKey == $request->signature_key) {
+            if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
+                $order = Order::find($request->order_id);
+                $order->payment_status = 'success';
+                $order->save();
+
+                $owner = Owner::first();
+                $owner->balance += $order->total_price;
+                $owner->save();
+
+                $history_transaction = new HistoryTransaction();
+                $history_transaction->owner_id = $owner->id;
+                $history_transaction->transaction_type = 'in';
+                $history_transaction->order_id = $order->id;
+                $history_transaction->amount = $order->total_price;
+
+                $history_transaction->balance_now = $owner->balance;
+                $history_transaction->save();
+                return 2;
+            } else if ($request->transaction_status == 'cancel' || $request->transaction_status == 'deny' || $request->transaction_status == 'expire') {
+                $order = Order::find($request->order_id);
+                $order->payment_status = 'failed';
+                $order->save();
+
+                OwnerCarAvailability::where('car_id', $order->order_details->car_id)->where('not_available_at', $order->rent_date)->delete();
+                return 1;
+            }
+            return 3;
+        }
+
+        return 0;
     }
 }
