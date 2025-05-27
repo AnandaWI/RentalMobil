@@ -108,7 +108,7 @@ class PaymentController extends BaseController
         if ($hashedKey == $request->signature_key) {
             if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
                 $order = Order::find($request->order_id);
-                $order->payment_status = 'success';
+                $order->status = 'success';
                 $order->save();
 
                 $owner = Owner::first();
@@ -126,7 +126,7 @@ class PaymentController extends BaseController
                 return 2;
             } else if ($request->transaction_status == 'cancel' || $request->transaction_status == 'deny' || $request->transaction_status == 'expire') {
                 $order = Order::find($request->order_id);
-                $order->payment_status = 'failed';
+                $order->status = 'failed';
                 $order->save();
 
                 OwnerCarAvailability::where('car_id', $order->order_details->car_id)->where('not_available_at', $order->rent_date)->delete();
