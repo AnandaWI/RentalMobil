@@ -17,7 +17,7 @@ class CronjobController extends BaseController
             ->whereHas('order', function ($query) {
                 $query->where('status', 'success');
             })
-            ->groupBy('email')
+            ->groupBy('id', 'email')
             ->get();
 
         $events = Event::where('is_published', false)
