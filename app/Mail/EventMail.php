@@ -43,6 +43,11 @@ class EventMail extends Mailable
     {
         return new Content(
             markdown: 'emails.event',
+            with: [
+                'title' => $this->title,
+                'content' => $this->content,
+                'link' => $this->link,
+            ]
         );
     }
 
