@@ -28,8 +28,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
-
-    Route::apiResource('events', EventController::class)->middleware('auth:sanctum');
 });
 
 
@@ -37,5 +35,6 @@ Route::middleware('guest')->group(function () {
     Route::post('create-order', [PaymentController::class, 'store']);
     Route::post('callback', [PaymentController::class, 'callback']);
 
+    Route::apiResource('events', EventController::class);
     Route::get('events', [CronjobController::class, 'sendEventEmail']);
 });
