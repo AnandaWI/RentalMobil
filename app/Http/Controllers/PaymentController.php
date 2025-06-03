@@ -46,6 +46,7 @@ class PaymentController extends BaseController
             $order->destination_id = $data['destination_id'];
             $order->day = $data['day'];
             $order->rent_date = $data['rent_date'];
+            // $order->pick_up_time = $data['pick_up_time'];
             $order->save();
 
             $cars = $data['order_details'];

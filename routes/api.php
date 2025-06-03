@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\AddOwnerController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\CronjobController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
@@ -26,10 +28,14 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
+
+    Route::apiResource('events', EventController::class)->middleware('auth:sanctum');
 });
 
 
 Route::middleware('guest')->group(function () {
     Route::post('create-order', [PaymentController::class, 'store']);
     Route::post('callback', [PaymentController::class, 'callback']);
+
+    Route::get('events', [CronjobController::class, 'sendEventEmail']);
 });

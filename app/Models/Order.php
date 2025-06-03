@@ -2,24 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    use HasUuids;
-
-    protected $keyType = 'string';
-    public $incrementing = false;
     protected $fillable = [
         'customer_id',
         'destination_id',
         'day',
         'total_price',
         'rent_date',
+        // 'pick_up_time',
         'transaction_id',
-        'status',
-        'snap_token'
+        'status'
     ];
 
     // Relationship with Customer

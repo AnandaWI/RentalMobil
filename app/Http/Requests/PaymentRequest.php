@@ -29,6 +29,7 @@ class PaymentRequest extends FormRequest
             'destination_id' => 'required|exists:m_destinations,id',
             'day' => 'required|integer',
             'rent_date' => 'required|date',
+            // 'pick_up_time' => 'required|date_format:H:i',
             'order_details' => 'required|array',
             'order_details.*' => 'required|exists:owner_cars,id',
         ];

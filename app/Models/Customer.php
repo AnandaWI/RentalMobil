@@ -14,9 +14,9 @@ class Customer extends Model
     ];
 
     // Relationship with Order (a customer can have many orders)
-    public function orders()
+    public function order()
     {
-        return $this->hasMany(Order::class, 'customer_id');
+        return $this->hasOne(Order::class, 'customer_id');
     }
 
     // Relationship with HistoryTransaction
