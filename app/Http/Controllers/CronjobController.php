@@ -20,7 +20,7 @@ class CronjobController extends BaseController
             ->get();
 
         $events = Event::where('is_published', false)
-            ->where('publish_date', '>=', now())
+            ->where('publish_date', '<=', now())
             ->get();
 
         foreach ($events as $event) {
