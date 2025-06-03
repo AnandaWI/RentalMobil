@@ -12,12 +12,11 @@ class CronjobController extends BaseController
     //
     public function sendEventEmail()
     {
-        $customers = Customer::with('order')
-            ->select(['id', 'email'])
+        $customers = Customer::select('email')
             ->whereHas('order', function ($query) {
                 $query->where('status', 'success');
             })
-            ->groupBy('id', 'email')
+            ->distinct()
             ->get();
 
         $events = Event::where('is_published', false)
