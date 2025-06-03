@@ -34,7 +34,8 @@ class CronjobController extends BaseController
         // return $this->sendSuccess("success");
         return $this->sendSuccess([
             'customers' => $customers,
-            'events' => $events
+            'events' => $events,
+            'now' => now(),
         ]);
     }
 }
