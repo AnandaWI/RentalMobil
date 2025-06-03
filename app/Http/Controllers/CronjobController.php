@@ -31,5 +31,7 @@ class CronjobController extends BaseController
             }
             $event->update(['is_published' => true]);
         }
+
+        return $this->sendSuccess("success");
     }
 }
