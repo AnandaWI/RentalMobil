@@ -36,5 +36,5 @@ Route::middleware('guest')->group(function () {
     Route::post('callback', [PaymentController::class, 'callback']);
 
     Route::apiResource('events', EventController::class);
-    Route::get('events', [CronjobController::class, 'sendEventEmail']);
+    Route::get('cronjob/events', [CronjobController::class, 'sendEventEmail']);
 });
