@@ -20,7 +20,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
-Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('banks', MBankController::class)->middleware('auth:sanctum');
     Route::apiResource('car-categories', MCarCategoryController::class)->middleware('auth:sanctum');
     Route::apiResource('car-types', MCarTypeController::class)->middleware('auth:sanctum');
