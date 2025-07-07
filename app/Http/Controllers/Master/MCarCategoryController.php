@@ -6,15 +6,24 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\Master\MCarCategoryStoreUpdateRequest;
 use App\Models\MCarCategory;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Request;
 
 class MCarCategoryController extends BaseController
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = MCarCategory::select('id', 'name')->paginate(10);
+        $query = $request->input('q');
+
+        $categoriesQuery = MCarCategory::select('id', 'name');
+
+        if ($query) {
+            $categoriesQuery->where('name', 'like', '%' . $query . '%');
+        }
+
+        $categories = $categoriesQuery->paginate(10);
 
         return response()->json([
             'total' => $categories->total(),
