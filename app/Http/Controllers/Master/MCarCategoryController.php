@@ -6,7 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\Master\MCarCategoryStoreUpdateRequest;
 use App\Models\MCarCategory;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class MCarCategoryController extends BaseController
 {
