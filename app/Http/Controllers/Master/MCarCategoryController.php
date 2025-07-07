@@ -14,8 +14,15 @@ class MCarCategoryController extends BaseController
      */
     public function index(): JsonResponse
     {
-        $categories = MCarCategory::all();
-        return $this->sendSuccess($categories);
+        $categories = MCarCategory::select('id', 'name')->paginate(10);
+
+        return response()->json([
+            'total' => $categories->total(),
+            'page' => $categories->currentPage(),
+            'per_page' => $categories->perPage(),
+            'last_page' => $categories->lastPage(),
+            'data' => $categories->items(),
+        ]);
     }
 
     /**
