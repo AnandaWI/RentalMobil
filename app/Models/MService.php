@@ -12,4 +12,9 @@ class MService extends Model
         'name',
         'description',
     ];
+
+    public function images()
+    {
+        return $this->hasMany(ServiceImage::class, 'service_id');
+    }
 }

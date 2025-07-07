@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('m_car_types', function (Blueprint $table) {
+        Schema::create('car_type_features', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('m_car_categories')->onDelete('cascade');
-            $table->string('car_name');
-            $table->integer('capacity');
-            $table->decimal('rent_price', 10, 2);
-            $table->text('description');
+            $table->unsignedBigInteger('car_id');
+            $table->string('feature');
+            $table->foreign('car_id')->references('id')->on('m_car_types')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('m_car_types');
+        Schema::dropIfExists('car_type_features');
     }
 };

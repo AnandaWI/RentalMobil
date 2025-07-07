@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class MCarType extends Model
+class ServiceImage extends Model
 {
     protected $table = 'service_images';
 
@@ -12,4 +12,8 @@ class MCarType extends Model
         'service_id',
         'img_url',
     ];
+
+    public function service() {
+        return $this->belongsTo(MService::class, 'service_id');
+    }
 }
