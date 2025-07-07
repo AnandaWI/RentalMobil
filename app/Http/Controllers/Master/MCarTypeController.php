@@ -16,13 +16,17 @@ class MCarTypeController extends BaseController
      */
     public function index(Request $request): JsonResponse
     {
-
         $query = $request->input('q');
+        $categoryId = $request->input('category_id');
 
         $carTypesQuery = MCarType::with('category');
 
         if ($query) {
             $carTypesQuery->where('car_name', 'like', '%' . $query . '%');
+        }
+
+        if ($categoryId) {
+            $carTypesQuery->where('category_id', $categoryId);
         }
 
         $categories = $carTypesQuery->paginate(10);
@@ -35,6 +39,7 @@ class MCarTypeController extends BaseController
             'data' => $categories->items(),
         ]);
     }
+
 
     /**
      * Store a newly created resource in storage.
