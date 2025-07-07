@@ -22,7 +22,7 @@ class MCarTypeController extends BaseController
         $carTypesQuery = MCarType::with('category');
 
         if ($query) {
-            $carTypesQuery->where('name', 'like', '%' . $query . '%');
+            $carTypesQuery->where('car_name', 'like', '%' . $query . '%');
         }
 
         $categories = $carTypesQuery->paginate(10);
