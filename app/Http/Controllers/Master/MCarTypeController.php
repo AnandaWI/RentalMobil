@@ -6,6 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\Master\MCarTypeStoreUpdateRequest;
 use App\Models\MCarType;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class MCarTypeController extends BaseController
@@ -13,10 +14,26 @@ class MCarTypeController extends BaseController
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $carTypes = MCarType::with('category')->get();
-        return $this->sendSuccess($carTypes);
+
+        $query = $request->input('q');
+
+        $carTypesQuery = MCarType::with('category');
+
+        if ($query) {
+            $carTypesQuery->where('name', 'like', '%' . $query . '%');
+        }
+
+        $categories = $carTypesQuery->paginate(10);
+
+        return response()->json([
+            'total' => $categories->total(),
+            'page' => $categories->currentPage(),
+            'per_page' => $categories->perPage(),
+            'last_page' => $categories->lastPage(),
+            'data' => $categories->items(),
+        ]);
     }
 
     /**
