@@ -16,7 +16,7 @@ class MServiceController extends Controller
     {
         $query = $request->input('q');
 
-        $driversQuery = MService::query();
+        $driversQuery = MService::with('images')->query();
 
         if ($query) {
             $driversQuery->where('name', 'like', '%' . $query . '%');
