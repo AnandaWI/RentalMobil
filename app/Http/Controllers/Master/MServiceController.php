@@ -39,8 +39,11 @@ class MServiceController extends Controller
             $service = MService::create($request->validated());
 
             // Transformasi input img_url ke format array asosiatif
-            $imagesData = array_map(function ($imgUrl) {
-                return ['img_url' => $imgUrl];
+            $imagesData = array_map(function ($imgUrl) use ($service) {
+                return [
+                    'service_id' => $service->id, // Menggunakan ID dari service yang baru saja dibuat
+                    'img_url' => $imgUrl
+                ];
             }, $request->img_url);
 
             $service->images()->createMany($imagesData);
