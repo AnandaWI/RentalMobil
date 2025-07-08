@@ -25,7 +25,7 @@ class MServiceStoreUpdateRequest extends FormRequest
             //
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:255',
-            'img_url' => 'required|string|max:255'
+            'img_url' => 'required|array'
         ];
     }
 }

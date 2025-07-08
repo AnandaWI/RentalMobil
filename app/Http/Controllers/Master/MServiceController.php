@@ -7,6 +7,7 @@ use App\Http\Requests\Master\MServiceStoreUpdateRequest;
 use App\Models\MService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MServiceController extends Controller
 {
@@ -33,13 +34,25 @@ class MServiceController extends Controller
 
     public function store(MServiceStoreUpdateRequest $request)
     {
-        $service = MService::create($request->validated());
+        try {
+            DB::beginTransaction();
+            $service = MService::create($request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Service created successfully',
-            'data' => $service
-        ], 201);
+            $service->images()->createMany($request->img_url);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Service created successfully',
+                'data' => $service
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Service created failed'
+            ]);
+        }
     }
 
     public function show(string $id)
@@ -56,6 +69,8 @@ class MServiceController extends Controller
     {
         $service = MService::findOrFail($id);
         $service->update($request->validated());
+        $service->images()->delete();
+        $service->images()->createMany($request->img_url);
 
         return response()->json([
             'status' => 'success',
