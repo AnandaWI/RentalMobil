@@ -9,6 +9,7 @@ use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
 use App\Http\Controllers\Master\MDestinationController;
 use App\Http\Controllers\Master\MDriverController;
+use App\Http\Controllers\Master\MServiceController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('car-types', MCarTypeController::class)->middleware('auth:sanctum');
     Route::apiResource('destinations', MDestinationController::class)->middleware('auth:sanctum');
     Route::apiResource('driver', MDriverController::class);
+    Route::apiResource('service', MServiceController::class);
+
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
@@ -36,7 +39,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware('guest')->group(function () {
     Route::post('create-order', [PaymentController::class, 'store']);
     Route::post('callback', [PaymentController::class, 'callback']);
-    Route::apiResource('driver', MDriverController::class);
+
 
     Route::apiResource('events', EventController::class);
     Route::get('cronjob/events', [CronjobController::class, 'sendEventEmail']);
