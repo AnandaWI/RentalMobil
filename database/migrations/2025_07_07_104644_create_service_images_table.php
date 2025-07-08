@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('car_id');
             $table->foreign('car_id')->references('id')->on('m_car_types');
+            $table->string('img_url');
             $table->timestamps();
         });
     }
