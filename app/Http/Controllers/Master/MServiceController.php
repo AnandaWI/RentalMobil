@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\MServiceStoreUpdateRequest;
 use App\Models\MService;
+use App\Models\ServiceImage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,15 +39,12 @@ class MServiceController extends Controller
             DB::beginTransaction();
             $service = MService::create($request->validated());
 
-            // Transformasi input img_url ke format array asosiatif
-            $imagesData = array_map(function ($imgUrl) use ($service) {
-                return [
-                    'service_id' => $service->id, // Menggunakan ID dari service yang baru saja dibuat
-                    'img_url' => $imgUrl
-                ];
-            }, $request->img_url);
-
-            $service->images()->createMany($imagesData);
+            foreach ($request->img_url as $image) {
+                ServiceImage::create([
+                    'service_id' => $service->id,
+                    'img_url' => $image,
+                ]);
+            }
             DB::commit();
 
             return response()->json([
