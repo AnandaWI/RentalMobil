@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('service_images', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('car_id');
-            $table->foreign('car_id')->references('id')->on('m_car_types');
+            $table->unsignedBigInteger('service_id');
+            $table->foreign('service_id')->references('id')->on('m_services')->onDelete('cascade');
             $table->string('img_url');
             $table->timestamps();
         });
