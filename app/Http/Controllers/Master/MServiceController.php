@@ -34,15 +34,16 @@ class MServiceController extends Controller
 
     public function store(MServiceStoreUpdateRequest $request)
     {
-        $data = $request->validated();
         try {
             DB::beginTransaction();
-            $service = MService::create([
-                'name' => $data['name'],
-                'description' => $data['description']
-            ]);
+            $service = MService::create($request->validated());
 
-            $service->images()->createMany($request->img_url);
+            // Transformasi input img_url ke format array asosiatif
+            $imagesData = array_map(function ($imgUrl) {
+                return ['img_url' => $imgUrl];
+            }, $request->img_url);
+
+            $service->images()->createMany($imagesData);
             DB::commit();
 
             return response()->json([
@@ -55,10 +56,11 @@ class MServiceController extends Controller
             return response()->json([
                 'status' => 'failed',
                 'message' => 'Service created failed',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ]);
         }
     }
+
 
     public function show(string $id)
     {
