@@ -34,9 +34,13 @@ class MServiceController extends Controller
 
     public function store(MServiceStoreUpdateRequest $request)
     {
+        $data = $request->validated();
         try {
             DB::beginTransaction();
-            $service = MService::create($request->validated());
+            $service = MService::create([
+                'name' => $data['name'],
+                'description' => $data['description']
+            ]);
 
             $service->images()->createMany($request->img_url);
             DB::commit();
@@ -50,7 +54,8 @@ class MServiceController extends Controller
             DB::rollBack();
             return response()->json([
                 'status' => 'failed',
-                'message' => 'Service created failed'
+                'message' => 'Service created failed',
+                'error' => $e->getMessage(),
             ]);
         }
     }
