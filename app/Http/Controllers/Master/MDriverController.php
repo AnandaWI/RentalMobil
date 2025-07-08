@@ -5,16 +5,29 @@ namespace App\Http\Controllers\Master;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Master\MDriverStoreUpdateRequest;
 use App\Models\MDriver;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MDriverController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $drivers = MDriver::all();
+        $query = $request->input('q');
+
+        $driversQuery = MDriver::query();
+
+        if ($query) {
+            $driversQuery->where('name', 'like', '%' . $query . '%');
+        }
+
+        $drivers = $driversQuery->paginate(10);
+
         return response()->json([
-            'status' => 'success',
-            'data' => $drivers
+            'total' => $drivers->total(),
+            'page' => $drivers->currentPage(),
+            'per_page' => $drivers->perPage(),
+            'last_page' => $drivers->lastPage(),
+            'data' => $drivers->items(),
         ]);
     }
 
