@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('service_images', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('car_id');
-            $table->string('img_url');
             $table->foreign('car_id')->references('id')->on('m_car_types');
             $table->timestamps();
         });
