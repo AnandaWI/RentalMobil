@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
             $table->foreignId('car_id')->constrained('owner_cars')->onDelete('cascade');
+            $table->foreignId('driver_id')->constrained('m_drivers')->onDelete('cascade')->nullable();
             $table->integer('amount');
             $table->timestamps();
         });

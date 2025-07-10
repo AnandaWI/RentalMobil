@@ -10,6 +10,13 @@ class MDriver extends Model
 
     protected $fillable = [
         'name',
+        'pengalaman',
+        'tgl_lahir',
         'img_url'
     ];
+
+    public function order_details()
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
 }

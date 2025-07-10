@@ -16,7 +16,7 @@ class Order extends Model
         'day',
         'total_price',
         'rent_date',
-        // 'pick_up_time',
+        'pick_up_time',
         'transaction_id',
         'status'
     ];

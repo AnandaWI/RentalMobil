@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('m_drivers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->integer('pengalaman');
+            $table->date('tgl_lahir');
             $table->string('img_url');
             $table->timestamps();
         });

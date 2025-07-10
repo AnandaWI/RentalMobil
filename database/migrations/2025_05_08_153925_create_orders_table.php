@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('day');
             $table->decimal('total_price', 10, 2);
             $table->date('rent_date');
-            // $table->time('pick_up_time');
+            $table->time('pick_up_time');
             $table->string('transaction_id')->nullable();
             $table->enum('status', ['pending', 'failed', 'success', 'done'])->default('pending');
             $table->timestamps();

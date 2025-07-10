@@ -9,6 +9,7 @@ class OrderDetail extends Model
     protected $fillable = [
         'order_id',
         'car_id',
+        'driver_id',
         'amount'
     ];
 
@@ -22,5 +23,10 @@ class OrderDetail extends Model
     public function car()
     {
         return $this->belongsTo(OwnerCar::class, 'car_id');
+    }
+
+    public function driver()
+    {
+        return $this->belongsTo(MDriver::class);
     }
 }

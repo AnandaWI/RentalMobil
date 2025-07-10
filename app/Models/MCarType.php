@@ -33,7 +33,8 @@ class MCarType extends Model
         return $this->hasMany(OwnerCar::class, 'car_type_id');
     }
 
-    public function features() {
+    public function features()
+    {
         return $this->hasMany(CarTypeFeature::class, 'car_type_id');
     }
 }
