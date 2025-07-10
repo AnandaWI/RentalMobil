@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AddOwnerController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Guest\ServiceController;
 use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
@@ -39,6 +40,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware('guest')->group(function () {
     Route::post('create-order', [PaymentController::class, 'store']);
     Route::post('callback', [PaymentController::class, 'callback']);
+    Route::prefix('guest')->group(function () {
+        Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
+    });
 
 
     Route::apiResource('events', EventController::class);
