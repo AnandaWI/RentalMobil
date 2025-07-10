@@ -14,7 +14,9 @@ class ServiceController extends Controller
     public function index()
     {
         //
-        $services = MService::all();
+        $services = MService::with(['images' => function ($query) {
+            $query->limit(1);
+        }])->get();
         return response()->json([
             'status' => 'success',
             'message' => 'Service created successfully',
