@@ -32,7 +32,7 @@ class ServiceController extends Controller
     public function show(string $id)
     {
         //
-        $service = MService::find($id);
+        $service = MService::with(['images'])->find($id);
         return response()->json([
             'status' => 'success',
             'message' => 'Service created successfully',
