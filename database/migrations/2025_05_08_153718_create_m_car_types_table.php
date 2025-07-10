@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('car_name');
             $table->integer('capacity');
             $table->decimal('rent_price', 10, 2);
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
