@@ -14,9 +14,7 @@ class FeatureController extends Controller
     public function index()
     {
         //
-        $features = MFeature::with(['images' => function ($query) {
-            $query->limit(1);
-        }])->get();
+        $features = MFeature::all();
         return response()->json([
             'status' => 'success',
             'message' => 'Feature created successfully',
