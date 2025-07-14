@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AddOwnerController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Guest\FeatureController;
 use App\Http\Controllers\Guest\ServiceController;
 use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Master\MCarTypeController;
 use App\Http\Controllers\Master\MDestinationController;
 use App\Http\Controllers\Master\MDriverController;
 use App\Http\Controllers\Master\MServiceController;
+use App\Http\Controllers\Master\MFeatureController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('destinations', MDestinationController::class)->middleware('auth:sanctum');
     Route::apiResource('driver', MDriverController::class);
     Route::apiResource('service', MServiceController::class);
+    Route::apiResource('feature', MFeatureController::class);
 
 
     Route::post('add-owner', AddOwnerController::class);
@@ -42,6 +45,7 @@ Route::middleware('guest')->group(function () {
     Route::post('callback', [PaymentController::class, 'callback']);
     Route::prefix('guest')->group(function () {
         Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
+        Route::apiResource('features', FeatureController::class)->only(['index', 'show']);
     });
 
 
