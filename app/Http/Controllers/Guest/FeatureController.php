@@ -24,8 +24,6 @@ class FeatureController extends Controller
         ], 201);
     }
 
-
-
     /**
      * Display the specified resource.
      */

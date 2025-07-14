@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('destinations', MDestinationController::class)->middleware('auth:sanctum');
     Route::apiResource('driver', MDriverController::class);
     Route::apiResource('service', MServiceController::class);
-    Route::apiResource('feature', MFeatureController::class);
+    Route::apiResource('features', MFeatureController::class);
 
 
     Route::post('add-owner', AddOwnerController::class);
