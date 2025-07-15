@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AddOwnerController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Guest\CarController;
 use App\Http\Controllers\Guest\FeatureController;
 use App\Http\Controllers\Guest\DriverController;
 use App\Http\Controllers\Guest\ServiceController;
@@ -48,6 +49,7 @@ Route::middleware('guest')->group(function () {
         Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
         Route::apiResource('features', FeatureController::class)->only(['index', 'show']);
         Route::apiResource('drivers', DriverController::class)->only(['index', 'show']);
+        Route::apiResource('cars', CarController::class)->only(['index', 'show']);
     });
 
 
