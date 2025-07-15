@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AddOwnerController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Guest\CarController;
 use App\Http\Controllers\Guest\FeatureController;
@@ -35,6 +36,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('driver', MDriverController::class);
     Route::apiResource('service', MServiceController::class);
     Route::apiResource('features', MFeatureController::class);
+    Route::apiResource('dashboard', DashboardController::class)->only(['index']);
 
 
     Route::post('add-owner', AddOwnerController::class);
