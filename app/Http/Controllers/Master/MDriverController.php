@@ -36,14 +36,11 @@ class MDriverController extends Controller
             $drivers = $driversQuery->paginate($perPage);
 
             return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'total' => $drivers->total(),
-                    'page' => $drivers->currentPage(),
-                    'per_page' => $drivers->perPage(),
-                    'last_page' => $drivers->lastPage(),
-                    'items' => $drivers->items(),
-                ]
+                'total' => $drivers->total(),
+                'page' => $drivers->currentPage(),
+                'per_page' => $drivers->perPage(),
+                'last_page' => $drivers->lastPage(),
+                'data' => $drivers->items(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
