@@ -52,8 +52,13 @@ class MCarTypeController extends BaseController
             $data = $request->validated();
 
             $carType = MCarType::create($data);
-            $carType->features()->attach($data['feature']);
-            $carType->images()->attach($data['img_url']);
+            foreach ($data['feature'] as $featureData) {
+                $carType->features()->create($featureData);
+            }
+            foreach ($data['img_url'] as $imgUrl) {
+                $carType->images()->create(['img_url' => $imgUrl]);
+            }
+
             return $this->sendSuccess($carType, 'Car type created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
