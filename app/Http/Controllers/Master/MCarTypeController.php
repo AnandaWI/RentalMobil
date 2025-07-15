@@ -72,7 +72,7 @@ class MCarTypeController extends BaseController
      */
     public function show(string $id): JsonResponse
     {
-        $carType = MCarType::with('category')->findOrFail($id);
+        $carType = MCarType::with(['category', 'features', 'images'])->findOrFail($id);
         return $this->sendSuccess($carType);
     }
 
