@@ -7,6 +7,7 @@ use App\Http\Requests\Master\MCarTypeStoreUpdateRequest;
 use App\Models\MCarType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class MCarTypeController extends BaseController
@@ -46,14 +47,18 @@ class MCarTypeController extends BaseController
      */
     public function store(MCarTypeStoreUpdateRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        DB::beginTransaction();
+        try {
+            $data = $request->validated();
 
-        if ($request->hasFile('img_url')) {
-            $data['img_url'] = $request->file('img_url')->store('car-types', 'public');
+            $carType = MCarType::create($data);
+            $carType->features()->attach($data['feature']);
+            $carType->images()->attach($data['img_url']);
+            return $this->sendSuccess($carType, 'Car type created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError($e->getMessage());
         }
-
-        $carType = MCarType::create($data);
-        return $this->sendSuccess($carType, 'Car type created successfully');
     }
 
     /**

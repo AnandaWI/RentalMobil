@@ -26,7 +26,12 @@ class MCarTypeStoreUpdateRequest extends FormRequest
             'car_name' => ['required', 'string', 'max:255'],
             'capacity' => ['required', 'integer', 'min:1'],
             'rent_price' => ['required', 'numeric', 'min:0'],
-            'img_url' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048']
+            'description' => ['required', 'string'],
+            'feature' => ['required', 'array'],
+            'img_url' => ['required', 'array'],
+
+            'feature.*' => ['required', 'string'],
+            'img_url.*' => ['required', 'string'],
         ];
     }
 }
