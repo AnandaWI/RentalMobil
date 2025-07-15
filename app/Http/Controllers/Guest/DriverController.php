@@ -16,9 +16,9 @@ class DriverController extends Controller
     {
         $drivers = MDriver::all();
 
-        // Tambahkan field 'tahun' yang berisi umur (selisih tahun dari tgl_lahir)
         $driversWithAge = $drivers->map(function ($driver) {
             $birthDate = Carbon::parse($driver->tgl_lahir);
+            // hitung umur dalam tahun, pastikan positif dan bulat ke bawah
             $driver->tahun = Carbon::now()->diffInYears($birthDate);
             return $driver;
         });
