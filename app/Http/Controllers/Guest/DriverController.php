@@ -17,18 +17,24 @@ class DriverController extends Controller
         $drivers = MDriver::all();
 
         $driversWithAge = $drivers->map(function ($driver) {
-            $birthDate = Carbon::parse($driver->tgl_lahir);
-            // hitung umur dalam tahun, pastikan positif dan bulat ke bawah
-            $driver->tahun = Carbon::now()->diffInYears($birthDate);
+            if ($driver->tgl_lahir) {
+                $birthYear = Carbon::parse($driver->tgl_lahir)->year;
+                $currentYear = Carbon::now()->year;
+                $driver->tahun = $currentYear - $birthYear;
+            } else {
+                $driver->tahun = null; // jika kosong
+            }
+
             return $driver;
         });
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Driver created successfully',
+            'message' => 'Drivers fetched successfully',
             'data' => $driversWithAge
-        ], 201);
+        ], 200);
     }
+
 
     /**
      * Display the specified resource.
