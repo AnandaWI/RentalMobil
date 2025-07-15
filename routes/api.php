@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Guest\FeatureController;
+use App\Http\Controllers\Guest\DriverController;
 use App\Http\Controllers\Guest\ServiceController;
 use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
@@ -46,6 +47,7 @@ Route::middleware('guest')->group(function () {
     Route::prefix('guest')->group(function () {
         Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
         Route::apiResource('features', FeatureController::class)->only(['index', 'show']);
+        Route::apiResource('drivers', DriverController::class)->only(['index', 'show']);
     });
 
 
