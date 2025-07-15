@@ -53,10 +53,10 @@ class MCarTypeController extends BaseController
 
             $carType = MCarType::create($data);
             foreach ($data['feature'] as $featureData) {
-                $carType->features()->create(['feature' => $featureData]);
+                $carType->features()->create(['feature' => $featureData, 'car_type_id' => $carType->id]);
             }
             foreach ($data['img_url'] as $imgUrl) {
-                $carType->images()->create(['img_url' => $imgUrl]);
+                $carType->images()->create(['img_url' => $imgUrl, 'car_type_id' => $carType->id]);
             }
 
             return $this->sendSuccess($carType, 'Car type created successfully');
