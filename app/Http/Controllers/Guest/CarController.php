@@ -39,7 +39,7 @@ class CarController extends Controller
     public function show(string $id)
     {
         //
-        $car = MCarType::with(['images','features'])->find($id);
+        $car = MCarType::with(['images', 'features', 'category'])->find($id);
         return response()->json([
             'status' => 'success',
             'message' => 'car created successfully',
