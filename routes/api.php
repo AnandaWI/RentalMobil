@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\CronjobController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\Guest\CarAvailabilityController;
 use App\Http\Controllers\Guest\CarController;
 use App\Http\Controllers\Guest\FeatureController;
 use App\Http\Controllers\Guest\DriverController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Master\MDestinationController;
 use App\Http\Controllers\Master\MDriverController;
 use App\Http\Controllers\Master\MServiceController;
 use App\Http\Controllers\Master\MFeatureController;
+use App\Http\Controllers\OwnerCarController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +39,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('service', MServiceController::class);
     Route::apiResource('features', MFeatureController::class);
     Route::apiResource('dashboard', DashboardController::class)->only(['index']);
+    Route::apiResource('owner-cars', OwnerCarController::class);
 
 
     Route::post('add-owner', AddOwnerController::class);
@@ -52,6 +55,7 @@ Route::middleware('guest')->group(function () {
         Route::apiResource('features', FeatureController::class)->only(['index', 'show']);
         Route::apiResource('drivers', DriverController::class)->only(['index', 'show']);
         Route::apiResource('cars', CarController::class)->only(['index', 'show']);
+        Route::apiResource('car-availability', CarAvailabilityController::class)->only(['index']);
     });
 
 
