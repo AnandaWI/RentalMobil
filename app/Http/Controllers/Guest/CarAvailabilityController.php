@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
-use App\Models\OwnerCar;
+use App\Models\MCarType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -29,46 +29,39 @@ class CarAvailabilityController extends Controller
             $startDate = $request->available_at;
             $endDate = $request->not_available_at;
 
-            // Ambil semua mobil dengan relasinya
-            $query = OwnerCar::with(['carType', 'owner', 'availabilities'])
-                ->whereDoesntHave('availabilities', function ($q) use ($startDate, $endDate) {
-                    $q->where(function ($query) use ($startDate, $endDate) {
-                        // Cek apakah ada overlap dengan rentang tanggal yang diminta
-                        $query->where(function ($q) use ($startDate, $endDate) {
-                            $q->where('not_available_at', '<=', $endDate)
-                              ->where('available_at', '>=', $startDate);
-                        });
+            // Ambil CarType yang memiliki OwnerCar tersedia
+            $carTypes = MCarType::whereHas('ownerCars', function ($q) use ($startDate, $endDate) {
+                $q->whereDoesntHave('availabilities', function ($query) use ($startDate, $endDate) {
+                    $query->where(function ($sub) use ($startDate, $endDate) {
+                        $sub->where('not_available_at', '<=', $endDate)
+                            ->where('available_at', '>=', $startDate);
                     });
                 });
+            })
+                ->with(['ownerCars' => function ($q) use ($startDate, $endDate) {
+                    $q->whereDoesntHave('availabilities', function ($query) use ($startDate, $endDate) {
+                        $query->where(function ($sub) use ($startDate, $endDate) {
+                            $sub->where('not_available_at', '<=', $endDate)
+                                ->where('available_at', '>=', $startDate);
+                        });
+                    });
+                }])
+                ->get();
 
-            $cars = $query->get()->map(function ($car) {
+            $result = $carTypes->map(function ($carType) {
                 return [
-                    'id' => $car->id,
-                    'plate_number' => $car->plate_number,
-                    'car_type' => [
-                        'id' => $car->carType->id,
-                        'name' => $car->carType->car_name,
-                        'capacity' => $car->carType->capacity,
-                        'rent_price' => $car->carType->rent_price
-                    ],
-                    'owner' => [
-                        'id' => $car->owner->id,
-                        'name' => $car->owner->name
-                    ],
-                    'availabilities' => $car->availabilities->map(function ($availability) {
-                        return [
-                            'not_available_at' => $availability->not_available_at,
-                            'available_at' => $availability->available_at
-                        ];
-                    })
+                    'id' => $carType->id,
+                    'name' => $carType->car_name,
+                    'capacity' => $carType->capacity,
+                    'rent_price' => $carType->rent_price,
+                    'count' => $carType->ownerCars->count(),
                 ];
             });
 
             return response()->json([
                 'status' => 'success',
-                'data' => $cars
+                'data' => $result
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
