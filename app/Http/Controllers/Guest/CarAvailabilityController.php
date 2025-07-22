@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use App\Models\MCarType;
+use App\Models\MCarCategory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +16,8 @@ class CarAvailabilityController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'available_at' => 'required|date',
-                'not_available_at' => 'required|date|after:available_at'
+                'not_available_at' => 'required|date|after:available_at',
+                'kategori' => 'nullable|string' // tambahkan validasi kategori opsional
             ]);
 
             if ($validator->fails()) {
@@ -28,16 +30,33 @@ class CarAvailabilityController extends Controller
 
             $startDate = $request->available_at;
             $endDate = $request->not_available_at;
+            $kategori = $request->kategori;
+
+            // Ambil category_id jika kategori dikirim
+            $categoryId = null;
+            if ($kategori) {
+                $category = MCarCategory::where('name', $kategori)->first();
+                if ($category) {
+                    $categoryId = $category->id;
+                }
+            }
 
             // Ambil CarType yang memiliki OwnerCar tersedia
-            $carTypes = MCarType::whereHas('ownerCars', function ($q) use ($startDate, $endDate) {
+            $carTypesQuery = MCarType::whereHas('ownerCars', function ($q) use ($startDate, $endDate) {
                 $q->whereDoesntHave('availabilities', function ($query) use ($startDate, $endDate) {
                     $query->where(function ($sub) use ($startDate, $endDate) {
                         $sub->where('not_available_at', '<=', $endDate)
                             ->where('available_at', '>=', $startDate);
                     });
                 });
-            })
+            });
+
+            // Jika kategori ada, tambahkan filter where category_id
+            if ($categoryId) {
+                $carTypesQuery->where('category_id', $categoryId);
+            }
+
+            $carTypes = $carTypesQuery
                 ->with(['ownerCars' => function ($q) use ($startDate, $endDate) {
                     $q->whereDoesntHave('availabilities', function ($query) use ($startDate, $endDate) {
                         $query->where(function ($sub) use ($startDate, $endDate) {
@@ -47,9 +66,9 @@ class CarAvailabilityController extends Controller
                     });
                 }])
                 ->with('category')
-                ->with((['images' => function ($q) {
+                ->with(['images' => function ($q) {
                     $q->limit(1);
-                }]))
+                }])
                 ->get();
 
             $result = $carTypes->map(function ($carType) {
@@ -69,7 +88,6 @@ class CarAvailabilityController extends Controller
                     ] : null,
                 ];
             });
-
 
             return response()->json([
                 'status' => 'success',
