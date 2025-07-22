@@ -59,8 +59,17 @@ class CarAvailabilityController extends Controller
                     'capacity' => $carType->capacity,
                     'rent_price' => $carType->rent_price,
                     'count' => $carType->ownerCars->count(),
+                    'category' => [
+                        'id' => $carType->category->id ?? null,
+                        'name' => $carType->category->name ?? null,
+                    ],
+                    'image' => $carType->images->first() ? [
+                        'id' => $carType->images->first()->id,
+                        'path' => $carType->images->first()->img_url,
+                    ] : null,
                 ];
             });
+
 
             return response()->json([
                 'status' => 'success',
