@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('order_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->uuid('order_id');
+            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreignId('car_id')->constrained('owner_cars')->onDelete('cascade');
             $table->foreignId('driver_id')->constrained('m_drivers')->onDelete('cascade')->nullable();
             $table->integer('amount');
