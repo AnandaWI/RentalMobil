@@ -21,6 +21,7 @@ return new class extends Migration
             $table->time('pick_up_time')->default('00:00:00');
             $table->string('transaction_id')->nullable();
             $table->enum('status', ['pending', 'failed', 'success', 'done'])->default('pending');
+            $table->string('snap_token')->nullable();
             $table->timestamps();
         });
     }
