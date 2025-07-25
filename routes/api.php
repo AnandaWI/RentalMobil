@@ -15,6 +15,8 @@ use App\Http\Controllers\Master\MBankController;
 use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
 use App\Http\Controllers\Master\MDestinationController;
+use App\Http\Controllers\Guest\MDestinationController as GuestMDestinationController;
+
 use App\Http\Controllers\Master\MDriverController;
 use App\Http\Controllers\Master\MServiceController;
 use App\Http\Controllers\Master\MFeatureController;
@@ -58,7 +60,7 @@ Route::middleware('guest')->group(function () {
         Route::apiResource('cars', CarController::class)->only(['index', 'show']);
         Route::apiResource('car-availability', CarAvailabilityController::class)->only(['index']);
         Route::apiResource('driver-availability', DriverAvailabilityController::class)->only(['index']);
-        Route::apiResource('destinations', MDestinationController::class)->only(['index']);
+        Route::apiResource('destinations', GuestMDestinationController::class)->only(['index']);
     });
 
 
