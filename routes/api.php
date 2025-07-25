@@ -58,6 +58,7 @@ Route::middleware('guest')->group(function () {
         Route::apiResource('cars', CarController::class)->only(['index', 'show']);
         Route::apiResource('car-availability', CarAvailabilityController::class)->only(['index']);
         Route::apiResource('driver-availability', DriverAvailabilityController::class)->only(['index']);
+        Route::apiResource('destinations', MDestinationController::class)->only(['index']);
     });
 
 
