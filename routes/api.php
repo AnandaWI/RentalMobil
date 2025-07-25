@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\Guest\CarAvailabilityController;
 use App\Http\Controllers\Guest\CarController;
+use App\Http\Controllers\Guest\DriverAvailabilityController;
 use App\Http\Controllers\Guest\FeatureController;
 use App\Http\Controllers\Guest\DriverController;
 use App\Http\Controllers\Guest\ServiceController;
@@ -56,6 +57,7 @@ Route::middleware('guest')->group(function () {
         Route::apiResource('drivers', DriverController::class)->only(['index', 'show']);
         Route::apiResource('cars', CarController::class)->only(['index', 'show']);
         Route::apiResource('car-availability', CarAvailabilityController::class)->only(['index']);
+        Route::apiResource('driver-availability', DriverAvailabilityController::class)->only(['index']);
     });
 
 
