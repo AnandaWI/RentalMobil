@@ -22,6 +22,6 @@ class MDriver extends Model
 
     public function availabilities()
     {
-        return $this->hasMany(DriverAvailability::class);
+        return $this->hasMany(DriverAvailability::class, 'driver_id');
     }
 }
