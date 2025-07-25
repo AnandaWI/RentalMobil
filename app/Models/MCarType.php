@@ -37,4 +37,9 @@ class MCarType extends Model
     {
         return $this->hasMany(CarTypeFeature::class, 'car_type_id');
     }
+
+    public function carDestinationPrices()
+    {
+        return $this->hasMany(CarDestinationPrice::class, 'car_type_id');
+    }
 }

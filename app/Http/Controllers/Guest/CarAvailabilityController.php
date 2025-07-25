@@ -17,7 +17,8 @@ class CarAvailabilityController extends Controller
             $validator = Validator::make($request->all(), [
                 'available_at' => 'required|date',
                 'not_available_at' => 'required|date|after:available_at',
-                'kategori' => 'nullable|string' // tambahkan validasi kategori opsional
+                'kategori' => 'nullable|string',
+                'destination_id' => 'required|exists:m_destinations,id'
             ]);
 
             if ($validator->fails()) {
@@ -31,6 +32,7 @@ class CarAvailabilityController extends Controller
             $startDate = $request->available_at;
             $endDate = $request->not_available_at;
             $kategori = $request->kategori;
+            $destinationId = $request->destination_id;
 
             // Ambil category_id jika kategori dikirim
             $categoryId = null;
@@ -69,14 +71,21 @@ class CarAvailabilityController extends Controller
                 ->with(['images' => function ($q) {
                     $q->limit(1);
                 }])
+                ->with(['carDestinationPrices' => function ($q) use ($destinationId) {
+                    $q->where('destination_id', $destinationId);
+                }])
                 ->get();
 
-            $result = $carTypes->map(function ($carType) {
+            $result = $carTypes->map(function ($carType) use ($destinationId) {
+                // Ambil harga dari carDestinationPrices relasi yang sudah difilter
+                $price = $carType->carDestinationPrices->first()->price ?? null;
+
                 return [
                     'id' => $carType->id,
                     'name' => $carType->car_name,
                     'capacity' => $carType->capacity,
                     'rent_price' => $carType->rent_price,
+                    'destination_price' => $price, // ➡️ tambahkan di response
                     'count' => $carType->ownerCars->count(),
                     'category' => [
                         'id' => $carType->category->id ?? null,
