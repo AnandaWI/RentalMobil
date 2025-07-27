@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('transaction_id')->nullable();
             $table->enum('status', ['pending', 'failed', 'success', 'done'])->default('pending');
             $table->string('snap_token')->nullable();
+            // $table->string('pick_up_location')->nullable();
+            // $table->text('detail_destination')->nullable();
             $table->timestamps();
         });
     }
