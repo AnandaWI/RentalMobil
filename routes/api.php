@@ -16,6 +16,7 @@ use App\Http\Controllers\Master\MCarCategoryController;
 use App\Http\Controllers\Master\MCarTypeController;
 use App\Http\Controllers\Master\MDestinationController;
 use App\Http\Controllers\Guest\MDestinationController as GuestMDestinationController;
+use App\Http\Controllers\ManageDestinationController;
 use App\Http\Controllers\ManageEventController;
 use App\Http\Controllers\Master\MDriverController;
 use App\Http\Controllers\Master\MServiceController;
@@ -44,7 +45,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('dashboard', DashboardController::class)->only(['index']);
     Route::apiResource('owner-cars', OwnerCarController::class);
     Route::apiResource('events', ManageEventController::class);
-
+    Route::apiResource('destination', ManageDestinationController::class);
+    Route::get('destination/get-car-types', [ManageDestinationController::class, 'carTypeList']);
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
