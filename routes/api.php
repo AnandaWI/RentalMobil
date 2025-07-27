@@ -46,7 +46,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('owner-cars', OwnerCarController::class);
     Route::apiResource('events', ManageEventController::class);
     Route::apiResource('destination', ManageDestinationController::class);
-    Route::get('destination/get-car-types', [ManageDestinationController::class, 'carTypeList']);
+    Route::get('get-car-types', [ManageDestinationController::class, 'carTypeList']);
 
     Route::post('add-owner', AddOwnerController::class);
     Route::post('logout', [AuthController::class, 'logout']);
