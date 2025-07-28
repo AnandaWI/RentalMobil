@@ -90,37 +90,58 @@ class PaymentController extends BaseController
             $order_details = $data['order_details'];
 
             $totalPrice = 0;
-            foreach ($order_details as $key => $order_detail) {
-                $newOrderDetail = new OrderDetail();
-                $newOrderDetail->order_id = $order->id;
-                $newOrderDetail->car_id = $order_detail['owner_car_type_id'];
-                $newOrderDetail->driver_id = $order_detail['driver_id'];
+            foreach ($order_details as $order_detail) {
+                // Cari mobil berdasarkan car_type_id
+                $availableCar = OwnerCar::where('car_type_id', $order_detail['owner_car_type_id'])
+                    ->whereDoesntHave('availabilities', function ($query) use ($order) {
+                        $startDate = $order->rent_date->format('Y-m-d');
+                        $endDate = $order->rent_date->copy()->addDays($order->day)->format('Y-m-d');
 
-                $owner_car = OwnerCar::find($order_detail['owner_car_type_id']);
-                $car_type = MCarType::find($owner_car->car_type_id);
-                $car_destination_price = CarDestinationPrice::where('destination_id', $data['destination_id'])->where('car_type_id', $car_type->id)->first();
+                        $query->where(function ($q) use ($startDate, $endDate) {
+                            $q->where('not_available_at', '<=', $endDate)
+                                ->where('available_at', '>=', $startDate);
+                        });
+                    })
+                    ->first();
 
-                $car_destination_price = $car_destination_price->price;
+                if (!$availableCar) {
+                    throw new \Exception('Tidak ada mobil yang tersedia dengan tipe tersebut dari ' . $order->rent_date->format('Y-m-d') . ' selama ' . $order->day . ' hari.');
+                }
+
+                $car_type = MCarType::find($availableCar->car_type_id);
+                $car_destination_price = CarDestinationPrice::where('destination_id', $data['destination_id'])
+                    ->where('car_type_id', $car_type->id)
+                    ->first();
+
+                $car_destination_price_value = $car_destination_price?->price ?? 0;
                 $rentCarPrice = $car_type->rent_price;
 
-                $formula = $car_destination_price + ($order->day * $rentCarPrice);
+                $formula = $car_destination_price_value + ($order->day * $rentCarPrice);
+
+                $newOrderDetail = new OrderDetail();
+                $newOrderDetail->order_id = $order->id;
+                $newOrderDetail->car_id = $availableCar->id; // gunakan id mobil yang ditemukan
+                $newOrderDetail->driver_id = $order_detail['driver_id'];
                 $newOrderDetail->amount = $formula;
                 $newOrderDetail->save();
-                $totalPrice += $formula;
 
+                // simpan ketersediaan mobil
                 $owner_car_availability = new OwnerCarAvailability();
-                $owner_car_availability->car_id = $owner_car->id;
+                $owner_car_availability->car_id = $availableCar->id;
                 $owner_car_availability->not_available_at = $order->rent_date;
                 $rentDate = new DateTime($order->rent_date);
                 $rentDate->add(new DateInterval('P' . $order->day . 'D'));
                 $owner_car_availability->available_at = $rentDate->format('Y-m-d');
                 $owner_car_availability->save();
 
+                // simpan ketersediaan driver
                 $driverAvailability = new DriverAvailability();
                 $driverAvailability->driver_id = $order_detail['driver_id'];
                 $driverAvailability->not_available_at = $order->rent_date;
                 $driverAvailability->available_at = Carbon::parse($order->rent_date)->addDays($order->day)->format('Y-m-d');
                 $driverAvailability->save();
+
+                $totalPrice += $formula;
             }
 
             // Masuk ke Midtrans
