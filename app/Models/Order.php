@@ -20,7 +20,7 @@ class Order extends Model
         'pick_up_location',
         'detail_destination',
         'transaction_id',
-        'status'
+        'status',
     ];
 
     protected static function boot()

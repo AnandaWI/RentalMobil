@@ -29,9 +29,13 @@ class PaymentRequest extends FormRequest
             'destination_id' => 'required|exists:m_destinations,id',
             'day' => 'required|integer',
             'rent_date' => 'required|date',
-            // 'pick_up_time' => 'required|date_format:H:i',
+            'pick_up_time' => 'required|date_format:H:i',
+            'pick_up_location' => 'required|string',
+            'total_price' => 'required|integer',
             'order_details' => 'required|array',
-            'order_details.*' => 'required|exists:owner_cars,id',
+            'order_details.*.driver_id' => 'nullable|exists:m_drivers,id',
+            'order_details.*.owner_car_type_id' => 'required|exists:owner_cars,id',
+            'detail_destination' => 'required|string'
         ];
     }
 }
