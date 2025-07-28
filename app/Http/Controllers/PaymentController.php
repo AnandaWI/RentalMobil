@@ -78,6 +78,7 @@ class PaymentController extends BaseController
                     $availableDrivers = $this->getAvailableDrivers($order->rent_date, $order->day, $usedDriverIds);
 
                     if ($availableDrivers->isEmpty()) {
+                        DB::rollBack();
                         throw new \Exception('Tidak ada driver yang tersedia dari ' . $order->rent_date->format('Y-m-d') . ' selama ' . $order->day . ' hari.');
                     }
 
@@ -105,6 +106,7 @@ class PaymentController extends BaseController
                     ->first();
 
                 if (!$availableCar) {
+                    DB::rollBack();
                     throw new \Exception('Tidak ada mobil yang tersedia dengan tipe tersebut dari ' . $order->rent_date->format('Y-m-d') . ' selama ' . $order->day . ' hari.');
                 }
 
