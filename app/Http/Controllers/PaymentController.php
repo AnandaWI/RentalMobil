@@ -67,7 +67,7 @@ class PaymentController extends BaseController
             $order->total_price = $data['total_price'];
             $order->rent_date = Carbon::parse($data['rent_date']);;
             $order->pick_up_time = $data['pick_up_time'];
-            $order->pick_up_location = $data['pick_up_location'];
+            // $order->pick_up_location = $data['pick_up_location'];
             $order->detail_destination = $data['detail_destination'];
             $order->save();
 

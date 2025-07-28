@@ -30,7 +30,7 @@ class PaymentRequest extends FormRequest
             'day' => 'required|integer',
             'rent_date' => 'required|date',
             'pick_up_time' => 'required|date_format:H:i',
-            'pick_up_location' => 'required|string',
+            // 'pick_up_location' => 'required|string',
             'total_price' => 'required|integer',
             'order_details' => 'required|array',
             'order_details.*.driver_id' => 'nullable|exists:m_drivers,id',
