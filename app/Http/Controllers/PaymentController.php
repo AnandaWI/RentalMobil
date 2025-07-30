@@ -218,7 +218,7 @@ class PaymentController extends BaseController
     {
         try {
             // Load relasi yang diperlukan
-            $order->load(['customer', 'destination', 'orderDetails.car.carType', 'orderDetails.driver']);
+            $order->load(['customer', 'destination', 'orderDetails.car.carType.category', 'orderDetails.driver']);
 
             $customerEmail = $order->customer->email;
             $customerName = $order->customer->name;
@@ -228,12 +228,16 @@ class PaymentController extends BaseController
                 return [
                     'car_type' => $detail->car->carType->car_name ?? 'N/A',
                     'driver_name' => $detail->driver->name ?? 'N/A',
-                    'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.')
+                    'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.'),
+                    'category' => $detail->car->carType->category->name ?? 'N/A'
                 ];
             });
 
+            // Cek apakah ada mobil VIP (yang memerlukan driver)
+            $hasVipCar = $carDetails->contains('category', 'VIP');
+
             // Template email HTML
-            $emailContent = $this->getEmailTemplate($order, $carDetails);
+            $emailContent = $this->getEmailTemplate($order, $carDetails, $hasVipCar);
 
             // Kirim email
             Mail::html($emailContent, function ($message) use ($customerEmail, $customerName, $order) {
@@ -249,13 +253,20 @@ class PaymentController extends BaseController
     /**
      * Template email HTML untuk konfirmasi pembayaran
      */
-    private function getEmailTemplate($order, $carDetails)
+    private function getEmailTemplate($order, $carDetails, $hasVipCar = false)
     {
         $carDetailsHtml = '';
         foreach ($carDetails as $car) {
             $carDetailsHtml .= '<tr>';
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
-            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['driver_name']) . '</td>';
+            
+            // Hanya tampilkan driver jika ada mobil VIP
+            if ($hasVipCar) {
+                // Untuk kategori REGULER, tampilkan "Tanpa Driver"
+                $driverName = $car['category'] === 'REGULER' ? 'Tanpa Driver' : $car['driver_name'];
+                $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($driverName) . '</td>';
+            }
+            
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
             $carDetailsHtml .= '</tr>';
         }
@@ -268,6 +279,14 @@ class PaymentController extends BaseController
         $day = htmlspecialchars($order->day);
         $pickUpTime = htmlspecialchars($order->pick_up_time);
         $totalPrice = 'Rp ' . number_format($order->total_price, 0, ',', '.');
+
+        // Header tabel berdasarkan apakah ada mobil VIP atau tidak
+        $tableHeader = $hasVipCar 
+            ? '<th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
+               <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Driver</th>
+               <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga</th>'
+            : '<th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
+               <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga</th>';
 
         return '<!DOCTYPE html>
 <html>
@@ -317,13 +336,11 @@ class PaymentController extends BaseController
                 </tr>
             </table>
             
-            <h3>Detail Mobil & Driver</h3>
+            <h3>Detail Mobil' . ($hasVipCar ? ' & Driver' : '') . '</h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #ddd;">
                 <thead>
                     <tr style="background-color: #f8f9fa;">
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Driver</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga</th>
+                        ' . $tableHeader . '
                     </tr>
                 </thead>
                 <tbody>
