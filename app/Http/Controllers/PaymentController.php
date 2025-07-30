@@ -19,6 +19,8 @@ use DateInterval;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;  // Tambahkan ini
 use Midtrans\Config;
 
 class PaymentController extends BaseController
@@ -190,6 +192,10 @@ class PaymentController extends BaseController
 
                 $history_transaction->balance_now = $owner->balance;
                 $history_transaction->save();
+
+                // Kirim email notifikasi pembayaran sukses ke customer
+                $this->sendPaymentSuccessEmail($order);
+
                 return 2;
             } else if ($request->transaction_status == 'cancel' || $request->transaction_status == 'deny' || $request->transaction_status == 'expire') {
                 $order = Order::find($request->order_id);
@@ -203,5 +209,141 @@ class PaymentController extends BaseController
         }
 
         return 0;
+    }
+
+    /**
+     * Kirim email notifikasi pembayaran sukses ke customer
+     */
+    private function sendPaymentSuccessEmail($order)
+    {
+        try {
+            // Load relasi yang diperlukan
+            $order->load(['customer', 'destination', 'orderDetails.car.carType', 'orderDetails.driver']);
+
+            $customerEmail = $order->customer->email;
+            $customerName = $order->customer->name;
+
+            // Buat detail mobil yang disewa
+            $carDetails = $order->orderDetails->map(function ($detail) {
+                return [
+                    'car_type' => $detail->car->carType->name ?? 'N/A',
+                    'driver_name' => $detail->driver->name ?? 'N/A',
+                    'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.')
+                ];
+            });
+
+            // Template email HTML
+            $emailContent = $this->getEmailTemplate($order, $carDetails);
+
+            // Kirim email
+            Mail::html($emailContent, function ($message) use ($customerEmail, $customerName, $order) {
+                $message->to($customerEmail, $customerName)
+                    ->subject('Konfirmasi Pembayaran Rental Mobil - Order #' . $order->id);
+            });
+        } catch (\Exception $e) {
+            // Log error jika email gagal terkirim
+            Log::error('Failed to send payment success email: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Template email HTML untuk konfirmasi pembayaran
+     */
+    private function getEmailTemplate($order, $carDetails)
+    {
+        $carDetailsHtml = '';
+        foreach ($carDetails as $car) {
+            $carDetailsHtml .= '<tr>';
+            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
+            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['driver_name']) . '</td>';
+            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
+            $carDetailsHtml .= '</tr>';
+        }
+
+        $customerName = htmlspecialchars($order->customer->name);
+        $orderId = htmlspecialchars($order->id);
+        $destinationName = htmlspecialchars($order->destination->name ?? 'N/A');
+        $detailDestination = htmlspecialchars($order->detail_destination);
+        $rentDate = Carbon::parse($order->rent_date)->format('d F Y');
+        $day = htmlspecialchars($order->day);
+        $pickUpTime = htmlspecialchars($order->pick_up_time);
+        $totalPrice = 'Rp ' . number_format($order->total_price, 0, ',', '.');
+
+        return '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Konfirmasi Pembayaran</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #007bff; color: white; padding: 20px; text-align: center;">
+            <h1 style="margin: 0;">AEM Rentcar</h1>
+            <p style="margin: 5px 0 0 0;">Konfirmasi Pembayaran</p>
+        </div>
+        
+        <div style="padding: 20px; background-color: #f8f9fa;">
+            <h2 style="color: #28a745; margin-top: 0;">✅ Pembayaran Berhasil!</h2>
+            <p>Halo <strong>' . $customerName . '</strong>,</p>
+            <p>Terima kasih! Pembayaran Anda telah berhasil diproses. Berikut adalah detail pesanan Anda:</p>
+        </div>
+        
+        <div style="padding: 20px;">
+            <h3>Detail Pesanan</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Order ID:</td>
+                    <td style="padding: 8px;">#' . $orderId . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Destinasi:</td>
+                    <td style="padding: 8px;">' . $destinationName . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Detail Destinasi:</td>
+                    <td style="padding: 8px;">' . $detailDestination . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Tanggal Sewa:</td>
+                    <td style="padding: 8px;">' . $rentDate . '</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Durasi:</td>
+                    <td style="padding: 8px;">' . $day . ' hari</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; font-weight: bold;">Waktu Jemput:</td>
+                    <td style="padding: 8px;">' . $pickUpTime . '</td>
+                </tr>
+            </table>
+            
+            <h3>Detail Mobil & Driver</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #ddd;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
+                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Driver</th>
+                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ' . $carDetailsHtml . '
+                </tbody>
+            </table>
+            
+            <div style="text-align: right; font-size: 18px; font-weight: bold; color: #007bff;">
+                Total Pembayaran: ' . $totalPrice . '
+            </div>
+        </div>
+        
+        <div style="background-color: #e9ecef; padding: 20px; text-align: center;">
+            <p style="margin: 0; color: #6c757d;">
+                Jika Anda memiliki pertanyaan, silakan hubungi customer service kami.<br>
+                Terima kasih telah menggunakan layanan AEM Rentcar!
+            </p>
+        </div>
+    </div>
+</body>
+</html>';
     }
 }
