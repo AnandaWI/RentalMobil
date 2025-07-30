@@ -259,19 +259,20 @@ class PaymentController extends BaseController
         foreach ($carDetails as $car) {
             $carDetailsHtml .= '<tr>';
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
-            
+
             // Hanya tampilkan driver jika ada mobil VIP
             if ($hasVipCar) {
-                // Untuk kategori REGULER, tampilkan "Tanpa Driver"
-                $driverName = $car['category'] === 'REGULER' ? 'Tanpa Driver' : $car['driver_name'];
+                // Untuk kategori REGULER, tampilkan "Driver"
+                $driverName = $car['category'] === 'REGULER' ? 'Driver' : $car['driver_name'];
                 $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($driverName) . '</td>';
             }
-            
+
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
             $carDetailsHtml .= '</tr>';
         }
 
         $customerName = htmlspecialchars($order->customer->name);
+        $customerAddress = htmlspecialchars($order->customer->address);
         $orderId = htmlspecialchars($order->id);
         $destinationName = htmlspecialchars($order->destination->name ?? 'N/A');
         $detailDestination = htmlspecialchars($order->detail_destination);
@@ -281,7 +282,7 @@ class PaymentController extends BaseController
         $totalPrice = 'Rp ' . number_format($order->total_price, 0, ',', '.');
 
         // Header tabel berdasarkan apakah ada mobil VIP atau tidak
-        $tableHeader = $hasVipCar 
+        $tableHeader = $hasVipCar
             ? '<th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
                <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Driver</th>
                <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga</th>'
@@ -323,6 +324,10 @@ class PaymentController extends BaseController
                     <td style="padding: 8px;">' . $detailDestination . '</td>
                 </tr>
                 <tr>
+                    <td style="padding: 8px; font-weight: bold;">Alamat Penjemputan:</td>
+                    <td style="padding: 8px;">' . $customerAddress . '</td>
+                </tr>
+                <tr>
                     <td style="padding: 8px; font-weight: bold;">Tanggal Sewa:</td>
                     <td style="padding: 8px;">' . $rentDate . '</td>
                 </tr>
@@ -355,7 +360,7 @@ class PaymentController extends BaseController
         
         <div style="background-color: #e9ecef; padding: 20px; text-align: center;">
             <p style="margin: 0; color: #6c757d;">
-                Jika Anda memiliki pertanyaan, silakan hubungi customer service kami.<br>
+                Jika Anda memiliki pertanyaan, silakan hubungi admin kami.<br>
                 Terima kasih telah menggunakan layanan AEM Rentcar!
             </p>
         </div>
