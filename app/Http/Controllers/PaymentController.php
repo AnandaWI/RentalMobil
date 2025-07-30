@@ -226,7 +226,7 @@ class PaymentController extends BaseController
             // Buat detail mobil yang disewa
             $carDetails = $order->orderDetails->map(function ($detail) {
                 return [
-                    'car_type' => $detail->car->carType->name ?? 'N/A',
+                    'car_type' => $detail->car->carType->car_name ?? 'N/A',
                     'driver_name' => $detail->driver->name ?? 'N/A',
                     'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.')
                 ];
