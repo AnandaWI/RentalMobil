@@ -377,12 +377,12 @@ class PaymentController extends BaseController
             return $this->sendError('Order tidak ditemukan.');
         }
 
-        // Hitung tanggal ketersediaan
-        $availableAt = Carbon::parse($order->rent_date)->startOfDay();
-        $notAvailableAt = $availableAt->copy()->addDays((int) $order->day)->endOfDay();
-
-        $availableAt = $availableAt->format('Y-m-d');
-        $notAvailableAt = $notAvailableAt->format('Y-m-d');
+        // Hitung tanggal awal & akhir dalam format Y-m-d
+        $availableAt = Carbon::parse($order->rent_date)->format('Y-m-d');
+        $notAvailableAt = Carbon::parse($order->rent_date)
+            ->copy()
+            ->addDays((int) $order->day)
+            ->format('Y-m-d');
 
         return [
             'available_at' => $availableAt,
@@ -393,21 +393,21 @@ class PaymentController extends BaseController
             // Hapus OwnerCarAvailability
             if ($detail->car_id) {
                 OwnerCarAvailability::where('car_id', $detail->car_id)
-                    ->where('available_at', '<=', $availableAt)
-                    ->where('not_available_at', '>=', $notAvailableAt)
+                    ->where('available_at', $availableAt)
+                    ->where('not_available_at', $notAvailableAt)
                     ->delete();
             }
 
             // Hapus DriverAvailability
             if ($detail->driver_id) {
                 DriverAvailability::where('driver_id', $detail->driver_id)
-                    ->where('available_at', '<=', $availableAt)
-                    ->where('not_available_at', '>=', $notAvailableAt)
+                    ->where('available_at', $availableAt)
+                    ->where('not_available_at', $notAvailableAt)
                     ->delete();
             }
         }
 
-        // Hapus order dan relasinya (optional: bisa pakai cascading delete)
+        // Hapus order
         $order->delete();
 
         return $this->sendSuccess(null, 'Order dan data ketersediaan berhasil dihapus.');
