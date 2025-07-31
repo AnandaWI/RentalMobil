@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DriverAvailability;
 use App\Models\Order;
 use App\Models\OwnerCarAvailability;
+use Carbon\Carbon;
 use Faker\Provider\Base;
 use Illuminate\Http\Request;
 
@@ -140,27 +141,41 @@ class OrderController extends BaseController
         try {
             $order = Order::with('orderDetails')->findOrFail($id);
 
-            foreach ($order->orderDetails as $detail) {
-                // Hapus ketersediaan mobil
-                OwnerCarAvailability::where('car_id', $detail->car_id)
-                    ->where('date', $order->rent_date)
-                    ->delete();
-
-                // Hapus ketersediaan driver
-                DriverAvailability::where('driver_id', $detail->driver_id)
-                    ->where('date', $order->rent_date)
-                    ->delete();
+            if (!$order) {
+                return $this->sendError('Order tidak ditemukan.');
             }
 
-            // Hapus relasi order details
-            $order->orderDetails()->delete();
+            // Hitung tanggal awal & akhir dalam format Y-m-d
+            $notAvailableAt = Carbon::parse($order->rent_date)->format('Y-m-d');
+            $availableAt = Carbon::parse($order->rent_date)
+                ->copy()
+                ->addDays((int) $order->day)
+                ->format('Y-m-d');
 
-            // Hapus order utama
+            foreach ($order->orderDetails as $detail) {
+                // Hapus OwnerCarAvailability
+                if ($detail->car_id) {
+                    OwnerCarAvailability::where('car_id', $detail->car_id)
+                        ->where('available_at', $availableAt)
+                        ->where('not_available_at', $notAvailableAt)
+                        ->delete();
+                }
+
+                // Hapus DriverAvailability
+                if ($detail->driver_id) {
+                    DriverAvailability::where('driver_id', $detail->driver_id)
+                        ->where('available_at', $availableAt)
+                        ->where('not_available_at', $notAvailableAt)
+                        ->delete();
+                }
+            }
+
+            // Hapus order
             $order->delete();
 
-            return response()->json(['success' => true, 'message' => 'Order berhasil dihapus.']);
+            return $this->sendSuccess(null, 'Order dan data ketersediaan berhasil dihapus.');
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return $this->sendError($e->getMessage());
         }
     }
 }
