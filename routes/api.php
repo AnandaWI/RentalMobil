@@ -21,6 +21,7 @@ use App\Http\Controllers\ManageEventController;
 use App\Http\Controllers\Master\MDriverController;
 use App\Http\Controllers\Master\MServiceController;
 use App\Http\Controllers\Master\MFeatureController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OwnerCarController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
@@ -67,6 +68,6 @@ Route::middleware('guest')->group(function () {
     });
 
 
-    Route::apiResource('events', EventController::class);
+    Route::apiResource('orders', OrderController::class)->only(['index', 'show']);
     Route::get('cronjob/events', [CronjobController::class, 'sendEventEmail']);
 });
