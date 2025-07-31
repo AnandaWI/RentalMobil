@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('owner_car_availabilities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('car_id')->constrained('owner_cars')->onDelete('cascade');
-            $table->dateTime('not_available_at');
-            $table->dateTime('available_at');
+            $table->date('not_available_at');
+            $table->date('available_at');
             $table->timestamps();
         });
     }

@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('driver_availabilities', function (Blueprint $table) {
             $table->id();
             $table->foreignId('driver_id')->constrained('m_drivers')->onDelete('cascade');
-            $table->dateTime('not_available_at');
-            $table->dateTime('available_at');
+            $table->date('not_available_at');
+            $table->date('available_at');
             $table->timestamps();
         });
     }
