@@ -378,8 +378,8 @@ class PaymentController extends BaseController
         }
 
         // Hitung tanggal awal & akhir dalam format Y-m-d
-        $availableAt = Carbon::parse($order->rent_date)->format('Y-m-d');
-        $notAvailableAt = Carbon::parse($order->rent_date)
+        $notAvailableAt = Carbon::parse($order->rent_date)->format('Y-m-d');
+        $availableAt = Carbon::parse($order->rent_date)
             ->copy()
             ->addDays((int) $order->day)
             ->format('Y-m-d');
