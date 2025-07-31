@@ -380,7 +380,7 @@ class PaymentController extends BaseController
 
         // Hitung tanggal ketersediaan mobil/driver
         $availableAt = Carbon::parse($order->rent_date);
-        $notAvailableAt = $availableAt->copy()->addDays($order->day);
+        $notAvailableAt = $availableAt->copy()->addDays((int) $order->day);
 
         // Hapus data ketersediaan mobil
         OwnerCarAvailability::where('car_id', $order->car_id)
