@@ -381,6 +381,9 @@ class PaymentController extends BaseController
         $availableAt = Carbon::parse($order->rent_date)->startOfDay();
         $notAvailableAt = $availableAt->copy()->addDays((int) $order->day)->endOfDay();
 
+        $availableAt = $availableAt->format('Y-m-d');
+        $notAvailableAt = $notAvailableAt->format('Y-m-d');
+
         return [
             'available_at' => $availableAt,
             'not_available_at' => $notAvailableAt,
