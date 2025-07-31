@@ -371,30 +371,35 @@ class PaymentController extends BaseController
 
     public function closeModal($snap_token)
     {
-
-        $order = Order::where('snap_token', $snap_token)->first();
+        $order = Order::with('orderDetails')->where('snap_token', $snap_token)->first();
 
         if (!$order) {
             return $this->sendError('Order tidak ditemukan.');
         }
 
-        // Hitung tanggal ketersediaan mobil/driver
-        $availableAt = Carbon::parse($order->rent_date);
-        $notAvailableAt = $availableAt->copy()->addDays((int) $order->day);
+        // Hitung tanggal ketersediaan
+        $availableAt = Carbon::parse($order->rent_date)->startOfDay();
+        $notAvailableAt = $availableAt->copy()->addDays((int) $order->day)->endOfDay();
 
-        // Hapus data ketersediaan mobil
-        OwnerCarAvailability::where('car_id', $order->car_id)
-            ->whereDate('available_at', $availableAt)
-            ->whereDate('not_available_at', $notAvailableAt)
-            ->delete();
+        foreach ($order->orderDetails as $detail) {
+            // Hapus OwnerCarAvailability
+            if ($detail->car_id) {
+                OwnerCarAvailability::where('car_id', $detail->car_id)
+                    ->where('available_at', '<=', $availableAt)
+                    ->where('not_available_at', '>=', $notAvailableAt)
+                    ->delete();
+            }
 
-        // Hapus data ketersediaan driver
-        DriverAvailability::where('driver_id', $order->driver_id)
-            ->whereDate('available_at', $availableAt)
-            ->whereDate('not_available_at', $notAvailableAt)
-            ->delete();
+            // Hapus DriverAvailability
+            if ($detail->driver_id) {
+                DriverAvailability::where('driver_id', $detail->driver_id)
+                    ->where('available_at', '<=', $availableAt)
+                    ->where('not_available_at', '>=', $notAvailableAt)
+                    ->delete();
+            }
+        }
 
-        // Hapus order
+        // Hapus order dan relasinya (optional: bisa pakai cascading delete)
         $order->delete();
 
         return $this->sendSuccess(null, 'Order dan data ketersediaan berhasil dihapus.');
