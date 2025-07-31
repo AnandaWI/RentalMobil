@@ -68,7 +68,7 @@ Route::middleware('guest')->group(function () {
     });
 
 
-    Route::apiResource('orders', OrderController::class)->only(['index', 'show',]);
+    Route::apiResource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
     Route::get('close-modal/{snap_token}', [PaymentController::class, 'closeModal']);
     Route::get('cronjob/events', [CronjobController::class, 'sendEventEmail']);
 });
