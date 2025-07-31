@@ -381,6 +381,11 @@ class PaymentController extends BaseController
         $availableAt = Carbon::parse($order->rent_date)->startOfDay();
         $notAvailableAt = $availableAt->copy()->addDays((int) $order->day)->endOfDay();
 
+        return [
+            'available_at' => $availableAt,
+            'not_available_at' => $notAvailableAt,
+        ];
+
         foreach ($order->orderDetails as $detail) {
             // Hapus OwnerCarAvailability
             if ($detail->car_id) {
