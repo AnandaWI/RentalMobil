@@ -384,11 +384,6 @@ class PaymentController extends BaseController
             ->addDays((int) $order->day)
             ->format('Y-m-d');
 
-        return [
-            'available_at' => $availableAt,
-            'not_available_at' => $notAvailableAt,
-        ];
-
         foreach ($order->orderDetails as $detail) {
             // Hapus OwnerCarAvailability
             if ($detail->car_id) {
