@@ -369,29 +369,30 @@ class PaymentController extends BaseController
 </html>';
     }
 
-    public function closeModal($snap_token)
+    public function closeModal(Request $request)
     {
+        $snapToken = $request->snap_token;
 
-        $order = Order::where('snap_token', $snap_token)->first();
+        $order = Order::where('snap_token', $snapToken)->first();
 
         if (!$order) {
             return $this->sendError('Order tidak ditemukan.');
         }
 
-        // Hitung tanggal ketersediaan mobil/driver
+        // Ubah rent_date dan day ke bentuk Carbon
         $availableAt = Carbon::parse($order->rent_date);
         $notAvailableAt = $availableAt->copy()->addDays((int) $order->day);
 
-        // Hapus data ketersediaan mobil
+        // Hapus data CarAvailability yang mencakup tanggal sewa
         OwnerCarAvailability::where('car_id', $order->car_id)
-            ->whereDate('available_at', $availableAt)
-            ->whereDate('not_available_at', $notAvailableAt)
+            ->where('available_at', '<=', $availableAt)
+            ->where('not_available_at', '>=', $notAvailableAt)
             ->delete();
 
-        // Hapus data ketersediaan driver
+        // Hapus data DriverAvailability yang mencakup tanggal sewa
         DriverAvailability::where('driver_id', $order->driver_id)
-            ->whereDate('available_at', $availableAt)
-            ->whereDate('not_available_at', $notAvailableAt)
+            ->where('available_at', '<=', $availableAt)
+            ->where('not_available_at', '>=', $notAvailableAt)
             ->delete();
 
         // Hapus order
