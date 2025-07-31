@@ -368,4 +368,35 @@ class PaymentController extends BaseController
 </body>
 </html>';
     }
+
+    public function closeModal($snap_token)
+    {
+
+        $order = Order::where('snap_token', $snap_token)->first();
+
+        if (!$order) {
+            return $this->sendError('Order tidak ditemukan.');
+        }
+
+        // Hitung tanggal ketersediaan mobil/driver
+        $availableAt = Carbon::parse($order->rent_date);
+        $notAvailableAt = $availableAt->copy()->addDays($order->day);
+
+        // Hapus data ketersediaan mobil
+        OwnerCarAvailability::where('car_id', $order->car_id)
+            ->whereDate('available_at', $availableAt)
+            ->whereDate('not_available_at', $notAvailableAt)
+            ->delete();
+
+        // Hapus data ketersediaan driver
+        DriverAvailability::where('driver_id', $order->driver_id)
+            ->whereDate('available_at', $availableAt)
+            ->whereDate('not_available_at', $notAvailableAt)
+            ->delete();
+
+        // Hapus order
+        $order->delete();
+
+        return $this->sendSuccess(null, 'Order dan data ketersediaan berhasil dihapus.');
+    }
 }
