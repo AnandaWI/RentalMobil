@@ -135,6 +135,34 @@ class OrderController extends BaseController
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $order = Order::findOrFail($id);
+            
+            // Hapus order details terlebih dahulu (jika ada)
+            if ($order->orderDetails()->exists()) {
+                $order->orderDetails()->delete();
+            }
+            
+            // Hapus history transactions (jika ada)
+            if ($order->historyTransactions()->exists()) {
+                $order->historyTransactions()->delete();
+            }
+            
+            // Hapus order
+            $order->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Order deleted successfully',
+                'data' => [
+                    'deleted_order_id' => $id
+                ]
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return $this->sendError('Order not found', [], 404);
+        } catch (\Exception $e) {
+            return $this->sendError('Failed to delete order: ' . $e->getMessage(), [], 500);
+        }
     }
 }
