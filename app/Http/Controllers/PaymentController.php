@@ -276,7 +276,8 @@ class PaymentController extends BaseController
         $orderId = htmlspecialchars($order->id);
         $destinationName = htmlspecialchars($order->destination->name ?? 'N/A');
         $detailDestination = htmlspecialchars($order->detail_destination);
-        $rentDate = Carbon::parse($order->rent_date)->format('d F Y');
+        Carbon::setLocale('id');
+        $rentDate = Carbon::parse($order->rent_date)->translatedFormat('d F Y');
         $day = htmlspecialchars($order->day);
         $pickUpTime = htmlspecialchars($order->pick_up_time);
         $totalPrice = 'Rp ' . number_format($order->total_price, 0, ',', '.');
