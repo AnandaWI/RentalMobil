@@ -15,7 +15,7 @@ class CarController extends Controller
     public function index(Request $request)
     {
         $query = MCarType::with(['images' => function ($query) {
-            $query->limit(1);
+            $query->orderBy('id')->limit(1);
         }]);
 
         if ($request->has('category_id')) {
