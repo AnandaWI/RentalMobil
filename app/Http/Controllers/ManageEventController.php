@@ -17,7 +17,7 @@ class ManageEventController extends BaseController
             $query = $request->input('q');
             $isPublished = $request->input('is_published');
 
-            $eventsQuery = Event::select(['id', 'subject', 'published_date', 'is_published']);
+            $eventsQuery = Event::select(['id', 'subject', 'publish_date', 'is_published']);
 
             if ($query) {
                 $eventsQuery->where('subject', 'like', '%' . $query . '%');
