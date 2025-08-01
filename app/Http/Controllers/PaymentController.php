@@ -304,7 +304,7 @@ class PaymentController extends BaseController
         </div>
         
         <div style="padding: 20px; background-color: #f8f9fa;">
-            <h2 style="color: #28a745; margin-top: 0;">✅ Pembayaran Berhasil!</h2>
+            <h2 style="color: #DAA520; margin-top: 0;">✅ Pembayaran Berhasil!</h2>
             <p>Halo <strong>' . $customerName . '</strong>,</p>
             <p>Terima kasih! Pembayaran Anda telah berhasil diproses. Berikut adalah detail pesanan Anda:</p>
         </div>
@@ -354,13 +354,14 @@ class PaymentController extends BaseController
                 </tbody>
             </table>
             
-            <div style="text-align: right; font-size: 18px; font-weight: bold; color: #007bff;">
+            <div style="text-align: right; font-size: 18px; font-weight: bold; color: #DAA520;">
                 Total Pembayaran: ' . $totalPrice . '
             </div>
         </div>
         
         <div style="background-color: #e9ecef; padding: 20px; text-align: center;">
             <p style="margin: 0; color: #6c757d;">
+                Admin akan menghubungi Anda 1 hari sebelum keberangkatan.<br>
                 Jika Anda memiliki pertanyaan, silakan hubungi admin kami.<br>
                 Terima kasih telah menggunakan layanan AEM Rentcar!
             </p>
