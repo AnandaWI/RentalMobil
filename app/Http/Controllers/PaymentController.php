@@ -298,13 +298,13 @@ class PaymentController extends BaseController
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background-color: #007bff; color: white; padding: 20px; text-align: center;">
+        <div style="background-color: #DAA520; color: white; padding: 20px; text-align: center;">
             <h1 style="margin: 0;">AEM Rentcar</h1>
             <p style="margin: 5px 0 0 0;">Konfirmasi Pembayaran</p>
         </div>
         
         <div style="padding: 20px; background-color: #f8f9fa;">
-            <h2 style="color: #DAA520; margin-top: 0;">✅ Pembayaran Berhasil!</h2>
+            <h2 style="color: #28a745; margin-top: 0;">✅ Pembayaran Berhasil!</h2>
             <p>Halo <strong>' . $customerName . '</strong>,</p>
             <p>Terima kasih! Pembayaran Anda telah berhasil diproses. Berikut adalah detail pesanan Anda:</p>
         </div>
