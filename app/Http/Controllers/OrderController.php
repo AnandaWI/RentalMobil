@@ -19,7 +19,7 @@ class OrderController extends BaseController
         try {
             $query = $request->input('q');
 
-            $ordersQuery = Order::with(['customer', 'destination'])
+            $ordersQuery = Order::with(['customer', 'destination', 'orderDetails.car.carType'])
                 ->select(['id', 'customer_id', 'destination_id', 'day', 'rent_date', 'pick_up_time', 'total_price', 'detail_destination', 'status', 'created_at']);
 
             if ($query) {
@@ -34,6 +34,10 @@ class OrderController extends BaseController
 
             // Transform data untuk frontend
             $transformedData = $orders->getCollection()->map(function ($order) {
+                $carTypes = $order->orderDetails->map(function ($detail) {
+                    return $detail->car->carType->car_name ?? 'N/A';
+                })->unique()->implode(', ');
+
                 return [
                     'id' => $order->id,
                     'customer_name' => $order->customer->name ?? 'N/A',
@@ -48,8 +52,10 @@ class OrderController extends BaseController
                     'status' => $order->status,
                     'detail_destination' => $order->detail_destination,
                     'order_date' => $order->created_at->format('d/m/Y H:i'),
+                    'car_types' => $carTypes, // ✅ mobil yang disewa
                 ];
             });
+
 
             return response()->json([
                 'total' => $orders->total(),
