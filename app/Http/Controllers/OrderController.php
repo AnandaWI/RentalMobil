@@ -32,11 +32,49 @@ class OrderController extends BaseController
 
             $orders = $ordersQuery->paginate(10);
 
+            // // Transform data untuk frontend
+            // $transformedData = $orders->getCollection()->map(function ($order) {
+            //     $carTypes = $order->orderDetails->map(function ($detail) {
+            //         return $detail->car->carType->car_name ?? 'N/A';
+            //     })->unique()->implode(', ');
+
+            //     return [
+            //         'id' => $order->id,
+            //         'customer_name' => $order->customer->name ?? 'N/A',
+            //         'email' => $order->customer->email ?? 'N/A',
+            //         'phone' => $order->customer->phone_number ?? 'N/A',
+            //         'address' => $order->customer->address ?? 'N/A',
+            //         'destination' => $order->destination->name ?? 'N/A',
+            //         'rent_date' => $order->rent_date,
+            //         'pickup_time' => $order->pick_up_time,
+            //         'days' => $order->day,
+            //         'total_price' => 'Rp ' . number_format($order->total_price, 0, ',', '.'),
+            //         'status' => $order->status,
+            //         'detail_destination' => $order->detail_destination,
+            //         'order_date' => $order->created_at->format('d/m/Y H:i'),
+            //         'car_types' => $carTypes, // ✅ mobil yang disewa
+            //     ];
+            // });
+
             // Transform data untuk frontend
             $transformedData = $orders->getCollection()->map(function ($order) {
-                $carTypes = $order->orderDetails->map(function ($detail) {
+                // Hitung total unit dan detail car types dengan jumlah
+                $carTypesWithCount = $order->orderDetails->groupBy(function ($detail) {
                     return $detail->car->carType->car_name ?? 'N/A';
-                })->unique()->implode(', ');
+                })->map(function ($details, $carName) {
+                    return [
+                        'name' => $carName,
+                        'count' => $details->count()
+                    ];
+                });
+
+                // Format car types dengan jumlah unit
+                $carTypes = $carTypesWithCount->map(function ($car) {
+                    return $car['name'] . ' (' . $car['count'] . ' unit)';
+                })->implode(', ');
+
+                // Hitung total unit keseluruhan
+                $totalUnits = $carTypesWithCount->sum('count');
 
                 return [
                     'id' => $order->id,
@@ -52,7 +90,9 @@ class OrderController extends BaseController
                     'status' => $order->status,
                     'detail_destination' => $order->detail_destination,
                     'order_date' => $order->created_at->format('d/m/Y H:i'),
-                    'car_types' => $carTypes, // ✅ mobil yang disewa
+                    'car_types' => $carTypes, // ✅ mobil dengan jumlah unit
+                    'total_units' => $totalUnits, // ✅ total unit keseluruhan
+                    'car_details' => $carTypesWithCount->values(), // ✅ detail per car type
                 ];
             });
 
