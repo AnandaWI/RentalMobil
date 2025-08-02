@@ -69,7 +69,7 @@ class CarAvailabilityController extends Controller
                 }])
                 ->with('category')
                 ->with(['images' => function ($q) {
-                    $q->limit(1);
+                    $q->orderBy('id')->limit(1);
                 }])
                 ->with(['carDestinationPrices' => function ($q) use ($destinationId) {
                     $q->where('destination_id', $destinationId);
