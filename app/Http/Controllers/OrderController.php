@@ -73,9 +73,6 @@ class OrderController extends BaseController
                     return $car['name'] . ' (' . $car['count'] . ' unit)';
                 })->implode(', ');
 
-                // Hitung total unit keseluruhan
-                $totalUnits = $carTypesWithCount->sum('count');
-
                 return [
                     'id' => $order->id,
                     'customer_name' => $order->customer->name ?? 'N/A',
@@ -91,7 +88,6 @@ class OrderController extends BaseController
                     'detail_destination' => $order->detail_destination,
                     'order_date' => $order->created_at->format('d/m/Y H:i'),
                     'car_types' => $carTypes, // ✅ mobil dengan jumlah unit
-                    'total_units' => $totalUnits, // ✅ total unit keseluruhan
                     'car_details' => $carTypesWithCount->values(), // ✅ detail per car type
                 ];
             });
