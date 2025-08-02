@@ -20,7 +20,8 @@ class OrderController extends BaseController
             $query = $request->input('q');
 
             $ordersQuery = Order::with(['customer', 'destination', 'orderDetails.car.carType'])
-                ->select(['id', 'customer_id', 'destination_id', 'day', 'rent_date', 'pick_up_time', 'total_price', 'detail_destination', 'status', 'created_at']);
+                ->select(['id', 'customer_id', 'destination_id', 'day', 'rent_date', 'pick_up_time', 'total_price', 'detail_destination', 'status', 'created_at'])
+                ->orderBy('created_at', 'desc'); //Orderan terbaru di atas;
 
             if ($query) {
                 $ordersQuery->whereHas('customer', function ($q) use ($query) {
