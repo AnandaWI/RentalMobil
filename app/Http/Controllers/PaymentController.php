@@ -223,37 +223,21 @@ class PaymentController extends BaseController
             $customerEmail = $order->customer->email;
             $customerName = $order->customer->name;
 
-            // Buat detail mobil yang disewa dengan breakdown harga
-            $carDetails = $order->orderDetails->map(function ($detail) use ($order) {
-                // Ambil data harga destinasi dan harga sewa harian
-                $carDestinationPrice = CarDestinationPrice::where('destination_id', $order->destination_id)
-                    ->where('car_type_id', $detail->car->car_type_id)
-                    ->first();
-                
-                $destinationPrice = $carDestinationPrice?->price ?? 0;
-                $dailyRentPrice = $detail->car->carType->rent_price ?? 0;
-                $totalDailyRent = $order->day * $dailyRentPrice;
-                
+            // Buat detail mobil yang disewa
+            $carDetails = $order->orderDetails->map(function ($detail) {
                 return [
                     'car_type' => $detail->car->carType->car_name ?? 'N/A',
                     'driver_name' => $detail->driver->name ?? 'N/A',
-                    'category' => $detail->car->carType->category->name ?? 'N/A',
-                    'destination_price' => $destinationPrice,
-                    'daily_rent_price' => $dailyRentPrice,
-                    'total_daily_rent' => $totalDailyRent,
-                    'subtotal' => $detail->amount,
-                    'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.')
+                    'amount' => 'Rp ' . number_format($detail->amount, 0, ',', '.'),
+                    'category' => $detail->car->carType->category->name ?? 'N/A'
                 ];
             });
-
-            // Hitung total unit mobil
-            $totalUnits = $order->orderDetails->count();
 
             // Cek apakah ada mobil VIP (yang memerlukan driver)
             $hasVipCar = $carDetails->contains('category', 'VIP');
 
             // Template email HTML
-            $emailContent = $this->getEmailTemplate($order, $carDetails, $hasVipCar, $totalUnits);
+            $emailContent = $this->getEmailTemplate($order, $carDetails, $hasVipCar);
 
             // Kirim email
             Mail::html($emailContent, function ($message) use ($customerEmail, $customerName, $order) {
@@ -269,9 +253,8 @@ class PaymentController extends BaseController
     /**
      * Template email HTML untuk konfirmasi pembayaran
      */
-    private function getEmailTemplate($order, $carDetails, $hasVipCar = false, $totalUnits = 0)
+    private function getEmailTemplate($order, $carDetails, $hasVipCar = false)
     {
-        // Buat tabel detail mobil dengan breakdown harga
         $carDetailsHtml = '';
         foreach ($carDetails as $car) {
             $carDetailsHtml .= '<tr>';
@@ -279,25 +262,13 @@ class PaymentController extends BaseController
 
             // Hanya tampilkan driver jika ada mobil VIP
             if ($hasVipCar) {
+                // Untuk kategori REGULER, tampilkan "Driver"
                 $driverName = $car['category'] === 'REGULER' ? 'Driver' : $car['driver_name'];
                 $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($driverName) . '</td>';
             }
 
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
             $carDetailsHtml .= '</tr>';
-        }
-
-        // Buat tabel breakdown harga per mobil
-        $priceBreakdownHtml = '';
-        foreach ($carDetails as $car) {
-            $priceBreakdownHtml .= '<tr>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($car['destination_price'], 0, ',', '.') . '</td>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($car['daily_rent_price'], 0, ',', '.') . '</td>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">' . $order->day . '</td>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($car['total_daily_rent'], 0, ',', '.') . '</td>';
-            $priceBreakdownHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; font-weight: bold;">Rp ' . number_format($car['subtotal'], 0, ',', '.') . '</td>';
-            $priceBreakdownHtml .= '</tr>';
         }
 
         $customerName = htmlspecialchars($order->customer->name);
@@ -326,7 +297,7 @@ class PaymentController extends BaseController
     <title>Konfirmasi Pembayaran</title>
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-    <div style="max-width: 700px; margin: 0 auto; padding: 20px;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background-color: #DAA520; color: white; padding: 20px; text-align: center;">
             <h1 style="margin: 0;">AEM Rentcar</h1>
             <p style="margin: 5px 0 0 0;">Konfirmasi Pembayaran</p>
@@ -369,30 +340,9 @@ class PaymentController extends BaseController
                     <td style="padding: 8px; font-weight: bold;">Waktu Jemput:</td>
                     <td style="padding: 8px;">' . $pickUpTime . '</td>
                 </tr>
-                <tr>
-                    <td style="padding: 8px; font-weight: bold;">Total Unit Mobil:</td>
-                    <td style="padding: 8px; color: #DAA520; font-weight: bold;">' . $totalUnits . ' unit</td>
-                </tr>
             </table>
             
-            <h3>Rincian Biaya</h3>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #ddd; font-size: 14px;">
-                <thead>
-                    <tr style="background-color: #f8f9fa;">
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: left;">Tipe Mobil</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga Destinasi</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Harga Sewa/Hari</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: center;">Hari</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Total Sewa</th>
-                        <th style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ' . $priceBreakdownHtml . '
-                </tbody>
-            </table>
-            
-            <h3>Ringkasan Mobil' . ($hasVipCar ? ' & Driver' : '') . '</h3>
+            <h3>Detail Mobil' . ($hasVipCar ? ' & Driver' : '') . '</h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #ddd;">
                 <thead>
                     <tr style="background-color: #f8f9fa;">
@@ -404,7 +354,7 @@ class PaymentController extends BaseController
                 </tbody>
             </table>
             
-            <div style="text-align: right; font-size: 18px; font-weight: bold; color: #DAA520; border-top: 2px solid #DAA520; padding-top: 10px;">
+            <div style="text-align: right; font-size: 18px; font-weight: bold; color: #DAA520;">
                 Total Pembayaran: ' . $totalPrice . '
             </div>
         </div>
