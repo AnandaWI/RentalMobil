@@ -277,15 +277,16 @@ class PaymentController extends BaseController
             $orderDetailsHtml .= '<tr>';
             $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $carType . '</td>';
             $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $driverName . '</td>';
-            $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . $carAmount . '</td>';
+            $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . number_format($carAmount, 0, ',', '.') . '</td>';
             $orderDetailsHtml .= '</tr>';
         }
 
         $biayaLain = $totalPrice - $biayaCarDestinasi;
         $biayaLainHtml = '<tr>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">Biaya Lain</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($biayaLain, 0, ',', '.') . '</td>
-        </tr>';
+    <td colspan="2" style="padding: 8px; border-bottom: 1px solid #ddd;">Biaya Lain</td>
+    <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($biayaLain, 0, ',', '.') . '</td>
+</tr>';
+
 
         $customerName = htmlspecialchars($order->customer->name);
         $customerAddress = htmlspecialchars($order->customer->address);
