@@ -78,7 +78,10 @@ class MServiceController extends Controller
         $service = MService::findOrFail($id);
         $service->update($request->validated());
         $service->images()->delete();
-        $service->images()->createMany($request->img_url);
+        $service->images()->createMany([
+            'img_url' => $request->img_url,
+            'service_id' => $service->id
+        ]);
 
         return response()->json([
             'status' => 'success',
