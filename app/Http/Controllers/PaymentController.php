@@ -264,25 +264,24 @@ class PaymentController extends BaseController
      */
     private function getEmailTemplate($order, $carDetails, $hasVipCar = false)
     {
-        $carDetailsHtml = '';
         $biayaCarDestinasi = 0;
-        foreach ($carDetails as $car) {
-            $biayaCarDestinasi += (int) $car['amount'];
-            $carDetailsHtml .= '<tr>';
-            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
+        $orderDetailsHtml = '';
+        $totalPrice = $order->total_price;
 
-            // Hanya tampilkan driver jika ada mobil VIP
-            if ($hasVipCar) {
-                // Untuk kategori REGULER, tampilkan "Driver"
-                $driverName = $car['category'] === 'REGULER' ? 'Driver' : $car['driver_name'];
-                $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($driverName) . '</td>';
-            }
+        foreach ($order->orderDetails as $detail) {
+            $carType = $detail->car->carType->car_name;
+            $driverName = $detail->driver->name;
+            $carAmount = $detail->amount;
+            $biayaCarDestinasi += $carAmount;
 
-            $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
-            $carDetailsHtml .= '</tr>';
+            $orderDetailsHtml .= '<tr>';
+            $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $carType . '</td>';
+            $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . $driverName . '</td>';
+            $orderDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . $carAmount . '</td>';
+            $orderDetailsHtml .= '</tr>';
         }
 
-        $biayaLain = $order->total_price - $biayaCarDestinasi;
+        $biayaLain = $totalPrice - $biayaCarDestinasi;
         $biayaLainHtml = '<tr>
             <td style="padding: 8px; border-bottom: 1px solid #ddd;">Biaya Lain</td>
             <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($biayaLain, 0, ',', '.') . '</td>
@@ -297,7 +296,7 @@ class PaymentController extends BaseController
         $rentDate = Carbon::parse($order->rent_date)->translatedFormat('d F Y');
         $day = htmlspecialchars($order->day);
         $pickUpTime = htmlspecialchars($order->pick_up_time);
-        $totalPrice = 'Rp ' . number_format($order->total_price, 0, ',', '.');
+        $totalPrice = 'Rp ' . number_format($totalPrice, 0, ',', '.');
 
         // Header tabel berdasarkan apakah ada mobil VIP atau tidak
         $tableHeader = $hasVipCar
@@ -367,7 +366,7 @@ class PaymentController extends BaseController
                     </tr>
                 </thead>
                 <tbody>
-                    ' . $carDetailsHtml . '
+                    ' . $orderDetailsHtml . '
                     ' . $biayaLainHtml . '
                 </tbody>
             </table>
