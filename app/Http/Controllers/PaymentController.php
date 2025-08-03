@@ -172,44 +172,53 @@ class PaymentController extends BaseController
 
     public function callback(Request $request)
     {
+        Log::info('Callback received', $request->all());
+
         $serverKey = config('midtrans.server_key');
         $hashedKey = hash('sha512', $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
+
+        Log::info("Generated signature: $hashedKey | From Request: " . $request->signature_key);
+
         if ($hashedKey == $request->signature_key) {
+            $order = Order::find($request->order_id);
+            if (!$order) {
+                Log::error("Order ID {$request->order_id} not found.");
+                return 0;
+            }
+
             if ($request->transaction_status == 'capture' || $request->transaction_status == 'settlement') {
-                $order = Order::find($request->order_id);
-                $order->status = 'success';
-                $order->save();
+                Log::info("Transaction success. Sending email to customer...");
+                try {
+                    $order->status = 'success';
+                    $order->save();
 
-                $owner = Owner::first();
-                $owner->balance += $order->total_price;
-                $owner->save();
+                    $owner = Owner::first();
+                    $owner->balance += $order->total_price;
+                    $owner->save();
 
-                $history_transaction = new HistoryTransaction();
-                $history_transaction->owner_id = $owner->id;
-                $history_transaction->transaction_type = 'in';
-                $history_transaction->order_id = $order->id;
-                $history_transaction->amount = $order->total_price;
+                    $history_transaction = new HistoryTransaction();
+                    $history_transaction->owner_id = $owner->id;
+                    $history_transaction->transaction_type = 'in';
+                    $history_transaction->order_id = $order->id;
+                    $history_transaction->amount = $order->total_price;
+                    $history_transaction->balance_now = $owner->balance;
+                    $history_transaction->save();
 
-                $history_transaction->balance_now = $owner->balance;
-                $history_transaction->save();
+                    // ⛔️ Error kemungkinan terjadi di sini:
+                    $this->sendPaymentSuccessEmail($order);
 
-                // Kirim email notifikasi pembayaran sukses ke customer
-                $this->sendPaymentSuccessEmail($order);
+                    Log::info("Email sent successfully for order ID {$order->id}");
+                } catch (\Exception $e) {
+                    Log::error("Error in callback success logic: " . $e->getMessage());
+                }
 
                 return 2;
-            } else if ($request->transaction_status == 'cancel' || $request->transaction_status == 'deny' || $request->transaction_status == 'expire') {
-                $order = Order::find($request->order_id);
-                $order->status = 'failed';
-                $order->save();
-
-                OwnerCarAvailability::where('car_id', $order->order_details->car_id)->where('not_available_at', $order->rent_date)->delete();
-                return 1;
             }
-            return 3;
         }
 
         return 0;
     }
+
 
     /**
      * Kirim email notifikasi pembayaran sukses ke customer
