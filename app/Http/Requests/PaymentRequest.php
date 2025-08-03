@@ -35,7 +35,6 @@ class PaymentRequest extends FormRequest
             'order_details' => 'required|array',
             'order_details.*.driver_id' => 'nullable|exists:m_drivers,id',
             'order_details.*.owner_car_type_id' => 'required|exists:m_car_types,id',
-            'order_details.*.count' => 'required|integer',
             'detail_destination' => 'required|string'
         ];
     }

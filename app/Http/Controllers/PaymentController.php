@@ -67,15 +67,14 @@ class PaymentController extends BaseController
             $order->destination_id = $data['destination_id'];
             $order->day = (int) $data['day'];
             $order->total_price = $data['total_price'];
-            $order->rent_date = Carbon::parse($data['rent_date']);
+            $order->rent_date = Carbon::parse($data['rent_date']);;
             $order->pick_up_time = $data['pickup_time'];
+            // $order->pick_up_location = $data['pick_up_location'];
             $order->detail_destination = $data['detail_destination'];
             $order->save();
 
             $usedDriverIds = collect($data['order_details'])->pluck('driver_id')->filter()->toArray();
-            $usedCarIds = [];
 
-            // Penugasan driver otomatis jika kosong
             foreach ($data['order_details'] as &$detail) {
                 if (empty($detail['driver_id'])) {
                     $availableDrivers = $this->getAvailableDrivers($order->rent_date, $order->day, $usedDriverIds);
@@ -87,82 +86,75 @@ class PaymentController extends BaseController
 
                     $selectedDriver = $availableDrivers->first();
                     $detail['driver_id'] = $selectedDriver->id;
-                    $usedDriverIds[] = $selectedDriver->id;
+                    $usedDriverIds[] = $selectedDriver->id; // supaya tidak double assign
                 }
             }
 
             $order_details = $data['order_details'];
+
             $totalPrice = 0;
-
             foreach ($order_details as $order_detail) {
-                $count = $order_detail['count'];
+                // Cari mobil berdasarkan car_type_id
+                $availableCar = OwnerCar::where('car_type_id', $order_detail['owner_car_type_id'])
+                    ->whereDoesntHave('availabilities', function ($query) use ($order) {
+                        $startDate = $order->rent_date->format('Y-m-d');
+                        $endDate = $order->rent_date->copy()->addDays($order->day)->format('Y-m-d');
 
-                for ($i = 0; $i < $count; $i++) {
-                    // Cari mobil yang belum dipakai dan tersedia
-                    $availableCar = OwnerCar::where('car_type_id', $order_detail['owner_car_type_id'])
-                        ->whereNotIn('id', $usedCarIds)
-                        ->whereDoesntHave('availabilities', function ($query) use ($order) {
-                            $startDate = $order->rent_date->format('Y-m-d');
-                            $endDate = $order->rent_date->copy()->addDays($order->day)->format('Y-m-d');
+                        $query->where(function ($q) use ($startDate, $endDate) {
+                            $q->where('not_available_at', '<=', $endDate)
+                                ->where('available_at', '>=', $startDate);
+                        });
+                    })
+                    ->first();
 
-                            $query->where(function ($q) use ($startDate, $endDate) {
-                                $q->where('not_available_at', '<=', $endDate)
-                                    ->where('available_at', '>=', $startDate);
-                            });
-                        })
-                        ->first();
-
-                    if (!$availableCar) {
-                        DB::rollBack();
-                        throw new \Exception('Tidak ada mobil yang tersedia dengan tipe tersebut dari ' . $order->rent_date->format('Y-m-d') . ' selama ' . $order->day . ' hari.');
-                    }
-
-                    $car_type = MCarType::find($availableCar->car_type_id);
-                    $car_destination_price = CarDestinationPrice::where('destination_id', $data['destination_id'])
-                        ->where('car_type_id', $car_type->id)
-                        ->first();
-
-                    $car_destination_price_value = $car_destination_price?->price ?? 0;
-                    $rentCarPrice = $car_type->rent_price;
-                    $formula = $car_destination_price_value + ($order->day * $rentCarPrice);
-
-                    // Simpan order detail
-                    $newOrderDetail = new OrderDetail();
-                    $newOrderDetail->order_id = $order->id;
-                    $newOrderDetail->car_id = $availableCar->id;
-                    $newOrderDetail->driver_id = $order_detail['driver_id'];
-                    $newOrderDetail->amount = $formula;
-                    $newOrderDetail->save();
-
-                    // Simpan OwnerCarAvailability
-                    $owner_car_availability = new OwnerCarAvailability();
-                    $owner_car_availability->car_id = $availableCar->id;
-                    $owner_car_availability->not_available_at = $order->rent_date;
-                    $owner_car_availability->available_at = Carbon::parse($order->rent_date)->addDays($order->day)->format('Y-m-d');
-                    $owner_car_availability->save();
-
-                    // Simpan DriverAvailability
-                    $driverAvailability = new DriverAvailability();
-                    $driverAvailability->driver_id = $order_detail['driver_id'];
-                    $driverAvailability->not_available_at = $order->rent_date;
-                    $driverAvailability->available_at = Carbon::parse($order->rent_date)->addDays($order->day)->format('Y-m-d');
-                    $driverAvailability->save();
-
-                    // Tandai driver & mobil sudah digunakan
-                    $usedCarIds[] = $availableCar->id;
-                    $usedDriverIds[] = $order_detail['driver_id'];
-
-                    $totalPrice += $formula;
+                if (!$availableCar) {
+                    DB::rollBack();
+                    throw new \Exception('Tidak ada mobil yang tersedia dengan tipe tersebut dari ' . $order->rent_date->format('Y-m-d') . ' selama ' . $order->day . ' hari.');
                 }
+
+                $car_type = MCarType::find($availableCar->car_type_id);
+                $car_destination_price = CarDestinationPrice::where('destination_id', $data['destination_id'])
+                    ->where('car_type_id', $car_type->id)
+                    ->first();
+
+                $car_destination_price_value = $car_destination_price?->price ?? 0;
+                $rentCarPrice = $car_type->rent_price;
+
+                $formula = $car_destination_price_value + ($order->day * $rentCarPrice);
+
+                $newOrderDetail = new OrderDetail();
+                $newOrderDetail->order_id = $order->id;
+                $newOrderDetail->car_id = $availableCar->id; // gunakan id mobil yang ditemukan
+                $newOrderDetail->driver_id = $order_detail['driver_id'];
+                $newOrderDetail->amount = $formula;
+                $newOrderDetail->save();
+
+                // simpan ketersediaan mobil
+                $owner_car_availability = new OwnerCarAvailability();
+                $owner_car_availability->car_id = $availableCar->id;
+                $owner_car_availability->not_available_at = $order->rent_date;
+                $rentDate = new DateTime($order->rent_date);
+                $rentDate->add(new DateInterval('P' . $order->day . 'D'));
+                $owner_car_availability->available_at = $rentDate->format('Y-m-d');
+                $owner_car_availability->save();
+
+                // simpan ketersediaan driver
+                $driverAvailability = new DriverAvailability();
+                $driverAvailability->driver_id = $order_detail['driver_id'];
+                $driverAvailability->not_available_at = $order->rent_date;
+                $driverAvailability->available_at = Carbon::parse($order->rent_date)->addDays($order->day)->format('Y-m-d');
+                $driverAvailability->save();
+
+                $totalPrice += $formula;
             }
 
-            // Midtrans Snap Token
-            $params = [
-                'transaction_details' => [
+            // Masuk ke Midtrans
+            $params = array(
+                'transaction_details' => array(
                     'order_id' => $order->id,
                     'gross_amount' => $order->total_price,
-                ]
-            ];
+                )
+            );
             $snapToken = \Midtrans\Snap::getSnapToken($params);
             $order->snap_token = $snapToken;
             $order->save();
