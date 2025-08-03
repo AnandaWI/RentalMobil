@@ -265,7 +265,9 @@ class PaymentController extends BaseController
     private function getEmailTemplate($order, $carDetails, $hasVipCar = false)
     {
         $carDetailsHtml = '';
+        $biayaCarDestinasi = 0;
         foreach ($carDetails as $car) {
+            $biayaCarDestinasi += (int) $car['amount'];
             $carDetailsHtml .= '<tr>';
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd;">' . htmlspecialchars($car['car_type']) . '</td>';
 
@@ -279,6 +281,12 @@ class PaymentController extends BaseController
             $carDetailsHtml .= '<td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">' . htmlspecialchars($car['amount']) . '</td>';
             $carDetailsHtml .= '</tr>';
         }
+
+        $biayaLain = $order->total_price - $biayaCarDestinasi;
+        $biayaLainHtml = '<tr>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd;">Biaya Lain</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">Rp ' . number_format($biayaLain, 0, ',', '.') . '</td>
+        </tr>';
 
         $customerName = htmlspecialchars($order->customer->name);
         $customerAddress = htmlspecialchars($order->customer->address);
@@ -360,6 +368,7 @@ class PaymentController extends BaseController
                 </thead>
                 <tbody>
                     ' . $carDetailsHtml . '
+                    ' . $biayaLainHtml . '
                 </tbody>
             </table>
             
