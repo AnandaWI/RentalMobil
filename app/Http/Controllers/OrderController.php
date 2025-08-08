@@ -90,6 +90,7 @@ class OrderController extends BaseController
                     'order_date' => $order->created_at->format('d/m/Y H:i'),
                     'car_types' => $carTypes, // ✅ mobil dengan jumlah unit
                     'car_details' => $carTypesWithCount->values(), // ✅ detail per car type
+                    'drivers' => $order->orderDetails->pluck('driver.name')->unique()->implode(', '), // ✅ driver yang disewa
                 ];
             });
 
